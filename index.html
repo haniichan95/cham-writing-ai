@@ -69,6 +69,8 @@
       --badge-yes-text: #0A6354;
       --badge-partial-bg: #E2E8F0;
       --badge-partial-text: #475569;
+      --badge-no-bg: rgba(199, 53, 43, 0.12);
+      --badge-no-text: #C7352B;
 
       --radius-card: 14px;
       --radius-sm: 8px;
@@ -135,6 +137,8 @@
         --badge-yes-text: #34D399;
         --badge-partial-bg: #273444;
         --badge-partial-text: #CBD5E1;
+        --badge-no-bg: rgba(255, 120, 112, 0.15);
+        --badge-no-text: #FF7870;
 
         --focus-ring: #34D399;
       }
@@ -207,6 +211,14 @@
       flex-shrink: 0;
     }
 
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     .preview-badge {
       font-size: 12px;
       font-weight: 500;
@@ -216,6 +228,28 @@
       padding: 4px 10px;
       border-radius: 999px;
       white-space: nowrap;
+    }
+
+    .preview-badge.is-ai {
+      color: var(--accent-text);
+      background: var(--accent-tint);
+      border-color: var(--accent-border);
+    }
+
+    .restore-sample-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .restore-sample-btn:hover {
+      background: var(--surface-subtle);
+      color: var(--text);
     }
 
     /* Main Layout */
@@ -542,12 +576,118 @@
       transition: background-color 0.15s ease, transform 0.08s ease;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--accent-hover);
     }
 
-    .btn-primary:active {
+    .btn-primary:active:not(:disabled) {
       transform: translateY(1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .ai-box {
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ai-box summary {
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .ai-box summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .ai-status-dot {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .ai-status-dot.is-ready {
+      color: var(--accent-text);
+    }
+
+    .ai-box-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    .key-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .key-row .text-input {
+      background: var(--surface);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .select-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    .select-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .ai-link {
+      color: var(--accent-text);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .ai-link:hover {
+      text-decoration: underline;
+    }
+
+    .text-fallback-details {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: var(--surface-subtle);
+    }
+
+    .text-fallback-details summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .text-fallback-details .textarea-input {
+      margin-top: 8px;
+      background: var(--surface);
+      min-height: 92px;
     }
 
     .grade-feedback {
@@ -563,6 +703,12 @@
 
     .grade-feedback.is-visible {
       display: block;
+    }
+
+    .grade-feedback.is-error {
+      color: var(--err-grammar);
+      background: var(--err-grammar-bg);
+      border-color: var(--err-grammar);
     }
 
     /* Right column */
@@ -1094,6 +1240,11 @@
       color: var(--badge-partial-text);
     }
 
+    .status-pill.is-no {
+      background: var(--badge-no-bg);
+      color: var(--badge-no-text);
+    }
+
     .criteria-desc {
       margin: 0;
       font-size: 12.5px;
@@ -1391,7 +1542,10 @@
         </span>
         <span>Chấm Writing</span>
       </div>
-      <span class="preview-badge">Bản xem trước giao diện · dữ liệu mẫu</span>
+      <div class="topbar-actions">
+        <button type="button" class="restore-sample-btn is-hidden" id="restore-sample-btn">Xem lại dữ liệu mẫu</button>
+        <span class="preview-badge" id="mode-badge">Bản xem trước giao diện · dữ liệu mẫu</span>
+      </div>
     </div>
   </header>
 
@@ -1492,63 +1646,81 @@
           <span class="dropzone-sub">Dán ảnh chụp màn hình bằng Ctrl+V cũng được</span>
         </div>
         <input type="file" id="work-file-input" accept="image/*" multiple hidden />
+        <details class="text-fallback-details">
+          <summary>Hoặc dán trực tiếp văn bản bài làm</summary>
+          <textarea
+            id="essay-text-input"
+            class="textarea-input"
+            rows="4"
+            placeholder="Dán bài viết tiếng Anh vào đây nếu chưa có ảnh bài làm..."
+          ></textarea>
+        </details>
         <p class="field-note">Mỗi ảnh có thể chứa nhiều bạn. Hệ thống tách bài theo tên ở cột bên trái.</p>
       </div>
 
+      <details class="ai-box" id="ai-settings-box" open>
+        <summary>
+          <span>Kết nối AI (Gemini)</span>
+          <span class="ai-status-dot" id="ai-key-status">Chưa nhập key</span>
+        </summary>
+        <div class="ai-box-body">
+          <div class="key-row">
+            <input
+              id="api-key-input"
+              class="text-input"
+              type="password"
+              autocomplete="off"
+              placeholder="Dán Gemini API Key (AIza...)"
+              aria-label="Gemini API Key"
+            />
+            <button type="button" class="btn-secondary" id="toggle-key-btn">Hiện</button>
+          </div>
+          <select id="model-select" class="select-input" aria-label="Chọn model Gemini">
+            <option value="auto">Model: Tự động chọn Flash mới nhất</option>
+            <option value="gemini-3.8-flash">gemini-3.8-flash</option>
+            <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="custom">Nhập tên model khác...</option>
+          </select>
+          <input
+            id="custom-model-input"
+            class="text-input is-hidden"
+            type="text"
+            placeholder="VD: gemini-3.8-flash"
+            aria-label="Tên model Gemini tùy chỉnh"
+          />
+          <p class="field-note">
+            Key chỉ lưu trên trình duyệt của bạn. Lấy key miễn phí tại
+            <a class="ai-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
+          </p>
+        </div>
+      </details>
+
       <button type="button" class="btn-primary" id="grade-btn">Chấm bài</button>
-      <div class="grade-feedback" id="grade-feedback" role="status" aria-live="polite">
-        Đây là bản xem trước giao diện, chưa kết nối AI. Kết quả bên phải là dữ liệu mẫu của bạn Quân.
-      </div>
+      <div class="grade-feedback" id="grade-feedback" role="status" aria-live="polite"></div>
     </aside>
 
     <!-- Right Column -->
     <section class="main-col" aria-label="Kết quả chấm bài">
       <!-- 1. Student Tabs -->
       <div class="student-bar">
-        <div class="student-tabs" role="tablist" aria-label="Danh sách học sinh">
-          <button
-            type="button"
-            class="student-tab is-active"
-            id="tab-quan"
-            role="tab"
-            aria-selected="true"
-            data-student="quan"
-          >
-            <span>Quân</span>
-            <span class="tab-pill-sub" id="quan-tab-count">13 lỗi</span>
-          </button>
-          <button
-            type="button"
-            class="student-tab"
-            id="tab-han"
-            role="tab"
-            aria-selected="false"
-            data-student="han"
-          >
-            <span>Hân</span>
-            <span class="tab-pill-sub">chưa chấm</span>
-          </button>
-        </div>
-        <div class="student-meta" id="student-meta">
-          Đề 3 · Your week · Pre-intermediate (B1)
-        </div>
+        <div class="student-tabs" id="student-tabs" role="tablist" aria-label="Danh sách học sinh"></div>
+        <div class="student-meta" id="student-meta"></div>
       </div>
 
-      <!-- Empty State for Han -->
-      <section class="card empty-state is-hidden" id="han-panel" role="tabpanel" aria-labelledby="tab-han">
-        <h2>Bài của Hân chưa có trong bản xem trước</h2>
-        <p>
-          Khi kết nối AI, hệ thống sẽ tự tách bài làm của từng bạn trong ảnh và tạo tab riêng để giáo viên chuyển xem nhanh kết quả của mỗi học sinh.
-        </p>
+      <!-- Empty State -->
+      <section class="card empty-state is-hidden" id="empty-state-panel" role="tabpanel">
+        <h2 id="empty-state-title"></h2>
+        <p id="empty-state-desc"></p>
       </section>
 
-      <!-- Quan Results -->
-      <div id="quan-panel" class="main-col" role="tabpanel" aria-labelledby="tab-quan">
+      <!-- Graded Student Results -->
+      <div id="graded-panel" class="main-col" role="tabpanel">
         <!-- 2. Reading Area -->
         <div class="reading-grid">
           <article class="card">
             <div class="essay-header">
-              <h2 class="card-title">Bài làm của Quân</h2>
+              <h2 class="card-title" id="essay-title">Bài làm của Quân</h2>
               <span class="word-count" id="word-count"></span>
             </div>
 
@@ -1612,48 +1784,14 @@
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Đối chiếu với đề bài</h2>
-            <span class="card-meta">Đọc từ ảnh đề · Đề 3 · Your week</span>
+            <span class="card-meta" id="prompt-meta">Đọc từ ảnh đề · Đề 3 · Your week</span>
           </div>
 
-          <p class="prompt-summary">
-            Viết bài báo về tuần đi học: có thấy mệt không, ngày nào tệ nhất, em làm gì để thư giãn.
-          </p>
+          <p class="prompt-summary" id="prompt-summary"></p>
 
-          <div class="criteria-grid">
-            <div class="criteria-item">
-              <div class="criteria-top">
-                <span class="criteria-title">Bám nội dung đề</span>
-                <span class="status-pill is-yes">Có</span>
-              </div>
-              <p class="criteria-desc">Có đủ 3 ý: lịch học, ngày tệ nhất (Monday) và cách thư giãn.</p>
-            </div>
+          <div class="criteria-grid" id="criteria-grid"></div>
 
-            <div class="criteria-item">
-              <div class="criteria-top">
-                <span class="criteria-title">Đặt câu hỏi thu hút người đọc</span>
-                <span class="status-pill is-yes">Có</span>
-              </div>
-              <p class="criteria-desc">Mở bài bằng "Are you one of those people who...?".</p>
-            </div>
-
-            <div class="criteria-item">
-              <div class="criteria-top">
-                <span class="criteria-title">Làm bài viết thú vị hơn</span>
-                <span class="status-pill is-partial">Một phần</span>
-              </div>
-              <p class="criteria-desc">Có "exhausted", nhưng còn thiếu cụm cảm xúc như "I absolutely love..." hoặc "full of energy".</p>
-            </div>
-
-            <div class="criteria-item">
-              <div class="criteria-top">
-                <span class="criteria-title">Nêu ý kiến riêng</span>
-                <span class="status-pill is-yes">Có</span>
-              </div>
-              <p class="criteria-desc">Có "In my view, Monday is always the worst day".</p>
-            </div>
-          </div>
-
-          <p class="field-note">Đối chiếu với khung gợi ý trong ảnh đề, không phải điểm số.</p>
+          <p class="field-note">Đối chiếu với khung gợi ý trong đề bài, không phải điểm số.</p>
         </section>
 
         <!-- 4. General Feedback Card -->
@@ -1666,20 +1804,12 @@
           <div class="feedback-grid">
             <div>
               <h3 class="feedback-col-title">LÀM TỐT</h3>
-              <ul class="feedback-list">
-                <li>Mở bài bằng một câu hỏi trực tiếp với người đọc, tạo cảm giác gần gũi.</li>
-                <li>Bám sát đề: có lịch học trong tuần, ngày mệt nhất (Monday) và cách thư giãn.</li>
-                <li>Biết dùng cụm như "In my view" và "especially" để nêu ý kiến và nhấn mạnh.</li>
-              </ul>
+              <ul class="feedback-list" id="strengths-list"></ul>
             </div>
 
             <div>
               <h3 class="feedback-col-title">ƯU TIÊN CẢI THIỆN</h3>
-              <ol class="feedback-list">
-                <li>Hòa hợp chủ ngữ và động từ, giữ đại từ nhất quán: is/are, help/helps, you/they (lỗi 1, 12).</li>
-                <li>Danh từ số nhiều và câu liệt kê: classes, books, không lặp "have" (lỗi 7, 11).</li>
-                <li>Dùng từ đúng bối cảnh trường học (lessons, không phải sessions) và nối ý bằng "These activities" (lỗi 6, 8, 12).</li>
-              </ol>
+              <ol class="feedback-list" id="improvements-list"></ol>
             </div>
           </div>
         </section>
@@ -1732,27 +1862,35 @@
       "use strict";
 
       /* -----------------------------
-       * Single Source of Truth: Data
+       * Constants & Metadata
        * ----------------------------- */
+      const STORAGE_KEY_API = "cham_writing_gemini_api_key";
+      const STORAGE_KEY_MODEL = "cham_writing_gemini_model";
+      const STORAGE_KEY_CUSTOM_MODEL = "cham_writing_gemini_custom_model";
+
       const LEVEL_INFO = {
         A1: {
           name: "Beginners",
           label: "Beginners (A1)",
+          prepare: "A1 · Prepare 1",
           desc: "Giải thích rất ngắn, dùng câu đơn và từ vựng A1, mỗi lỗi một ví dụ."
         },
         A2: {
           name: "Elementary",
           label: "Elementary (A2)",
+          prepare: "A2 · Prepare 2",
           desc: "Giải thích ngắn gọn bằng từ đơn giản, ví dụ câu A2."
         },
         B1: {
           name: "Pre-intermediate",
           label: "Pre-intermediate (B1)",
+          prepare: "B1 · Prepare 4",
           desc: "Giải thích rõ quy tắc, ví dụ câu B1, chỉ ra lỗi lặp lại nhiều lần."
         },
         B2: {
           name: "Intermediate",
           label: "Intermediate (B2)",
+          prepare: "B2 · Prepare 6",
           desc: "Giải thích ngắn, thêm sắc thái dùng từ và cách diễn đạt tự nhiên hơn."
         }
       };
@@ -1771,10 +1909,19 @@
         "Spelling & Punctuation"
       ];
 
-      const ESSAY_SOURCE =
+      const STATUS_LABEL = {
+        yes: "Có",
+        partial: "Một phần",
+        no: "Chưa"
+      };
+
+      /* -----------------------------
+       * Sample Data (Preview Mode)
+       * ----------------------------- */
+      const SAMPLE_ESSAY_SOURCE =
         "Are you one of those people [[1:who is usually tired when you wake up]]? Nowadays, teenagers often feel exhausted after a long time [[2:studying and working]]. [[3:I am the person like this]], too. I usually feel busy and bored on school days and it is very hard to [[4:wake up especially]] on winter days like now. [[5:in]] my school week, I have a lot of [[6:sessions]], homework [[7:and also have many extra class]]. In my view, Monday is always the worst day of the week. At school, I have [[8:more than one session]] and two extra classes after school. It [[9:makes me don't have]] free time. To reduce [[10:stressed]] and relax, I usually play games, [[11:read book]], play chess online or listen to music. [[12:It help]] me slow down and enjoy life, [[13:spend time with family and myself]].";
 
-      const ERRORS = [
+      const SAMPLE_ERRORS = [
         {
           id: 1,
           group: "Grammar",
@@ -1868,9 +2015,8 @@
         }
       ];
 
-      // Parse essay into structured tokens linked directly to ERRORS
       function parseEssayTokens(source, errors) {
-        const errorMap = new Map(errors.map((e) => [e.id, e]));
+        const errorMap = new Map(errors.map((e) => [e.id, Object.assign({}, e)]));
         const tokens = [];
         const regex = /\[\[(\d+):([^\]]+)\]\]/g;
         let lastIndex = 0;
@@ -1896,14 +2042,97 @@
           tokens.push({ type: "text", value: source.slice(lastIndex) });
         }
 
-        return tokens;
+        const orderedErrors = tokens
+          .filter((t) => t.type === "error")
+          .map((t) => t.error);
+
+        return { tokens, errors: orderedErrors };
       }
 
-      const ESSAY_TOKENS = parseEssayTokens(ESSAY_SOURCE, ERRORS);
+      function createSampleStudents() {
+        const parsed = parseEssayTokens(SAMPLE_ESSAY_SOURCE, SAMPLE_ERRORS);
+        return [
+          {
+            id: "quan",
+            name: "Quân",
+            status: "graded",
+            topicTitle: "Đề 3 · Your week",
+            promptMeta: "Đọc từ ảnh đề · Đề 3 · Your week",
+            promptSummary:
+              "Viết bài báo về tuần đi học: có thấy mệt không, ngày nào tệ nhất, em làm gì để thư giãn.",
+            promptCriteria: [
+              {
+                title: "Bám nội dung đề",
+                status: "yes",
+                desc: "Có đủ 3 ý: lịch học, ngày tệ nhất (Monday) và cách thư giãn."
+              },
+              {
+                title: "Đặt câu hỏi thu hút người đọc",
+                status: "yes",
+                desc: "Mở bài bằng \"Are you one of those people who...?\"."
+              },
+              {
+                title: "Làm bài viết thú vị hơn",
+                status: "partial",
+                desc: "Có \"exhausted\", nhưng còn thiếu cụm cảm xúc như \"I absolutely love...\" hoặc \"full of energy\"."
+              },
+              {
+                title: "Nêu ý kiến riêng",
+                status: "yes",
+                desc: "Có \"In my view, Monday is always the worst day\"."
+              }
+            ],
+            strengths: [
+              "Mở bài bằng một câu hỏi trực tiếp với người đọc, tạo cảm giác gần gũi.",
+              "Bám sát đề: có lịch học trong tuần, ngày mệt nhất (Monday) và cách thư giãn.",
+              "Biết dùng cụm như \"In my view\" và \"especially\" để nêu ý kiến và nhấn mạnh."
+            ],
+            improvements: [
+              "Hòa hợp chủ ngữ và động từ, giữ đại từ nhất quán: is/are, help/helps, you/they (lỗi 1, 12).",
+              "Danh từ số nhiều và câu liệt kê: classes, books, không lặp \"have\" (lỗi 7, 11).",
+              "Dùng từ đúng bối cảnh trường học (lessons, không phải sessions) và nối ý bằng \"These activities\" (lỗi 6, 8, 12)."
+            ],
+            tokens: parsed.tokens,
+            errors: parsed.errors
+          },
+          {
+            id: "han",
+            name: "Hân",
+            status: "pending_preview",
+            emptyTitle: "Bài của Hân chưa có trong bản xem trước",
+            emptyDesc:
+              "Khi bấm Chấm bài với ảnh thật và Gemini API Key, hệ thống sẽ tự tách bài làm của từng bạn trong ảnh và tạo tab riêng để giáo viên chuyển xem nhanh kết quả của mỗi học sinh."
+          }
+        ];
+      }
+
+      /* -----------------------------
+       * Storage Helpers
+       * ----------------------------- */
+      function storageGet(key, fallback = "") {
+        try {
+          return window.localStorage.getItem(key) || fallback;
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function storageSet(key, value) {
+        try {
+          if (value) {
+            window.localStorage.setItem(key, value);
+          } else {
+            window.localStorage.removeItem(key);
+          }
+        } catch (err) {
+          // Ignore storage restrictions
+        }
+      }
 
       function getFirstSentence(text) {
-        const idx = text.indexOf(". ");
-        return idx === -1 ? text : text.slice(0, idx + 1);
+        const clean = String(text || "").trim();
+        const idx = clean.indexOf(". ");
+        return idx === -1 ? clean : clean.slice(0, idx + 1);
       }
 
       /* -----------------------------
@@ -1911,29 +2140,48 @@
        * ----------------------------- */
       const state = {
         level: "B1",
-        student: "quan",
-        activeGroup: null, // null = All
+        students: createSampleStudents(),
+        activeStudentIndex: 0,
+        activeGroup: null,
         selectedErrorId: 1,
-        highlightRewrite: true
+        highlightRewrite: true,
+        isSampleMode: true,
+        isGrading: false,
+        promptUploads: [],
+        workUploads: []
       };
 
       /* -----------------------------
        * DOM References
        * ----------------------------- */
+      const modeBadgeEl = document.getElementById("mode-badge");
+      const restoreSampleBtn = document.getElementById("restore-sample-btn");
+
+      const studentNameInput = document.getElementById("student-name-input");
+      const extraNotesInput = document.getElementById("extra-notes-input");
+      const essayTextInput = document.getElementById("essay-text-input");
+
       const levelBtns = Array.from(document.querySelectorAll(".level-btn"));
       const levelDescEl = document.getElementById("level-desc");
-      const studentMetaEl = document.getElementById("student-meta");
       const detailLevelNoteEl = document.getElementById("detail-level-note");
+
+      const apiKeyInput = document.getElementById("api-key-input");
+      const toggleKeyBtn = document.getElementById("toggle-key-btn");
+      const aiKeyStatusEl = document.getElementById("ai-key-status");
+      const modelSelect = document.getElementById("model-select");
+      const customModelInput = document.getElementById("custom-model-input");
 
       const gradeBtn = document.getElementById("grade-btn");
       const gradeFeedbackEl = document.getElementById("grade-feedback");
 
-      const tabQuan = document.getElementById("tab-quan");
-      const tabHan = document.getElementById("tab-han");
-      const quanPanel = document.getElementById("quan-panel");
-      const hanPanel = document.getElementById("han-panel");
-      const quanTabCount = document.getElementById("quan-tab-count");
+      const studentTabsEl = document.getElementById("student-tabs");
+      const studentMetaEl = document.getElementById("student-meta");
+      const emptyStatePanel = document.getElementById("empty-state-panel");
+      const emptyStateTitleEl = document.getElementById("empty-state-title");
+      const emptyStateDescEl = document.getElementById("empty-state-desc");
+      const gradedPanel = document.getElementById("graded-panel");
 
+      const essayTitleEl = document.getElementById("essay-title");
       const wordCountEl = document.getElementById("word-count");
       const filterRowEl = document.getElementById("filter-row");
       const ratioBarEl = document.getElementById("ratio-bar");
@@ -1950,27 +2198,43 @@
       const prevErrBtn = document.getElementById("prev-err-btn");
       const nextErrBtn = document.getElementById("next-err-btn");
 
+      const promptMetaEl = document.getElementById("prompt-meta");
+      const promptSummaryEl = document.getElementById("prompt-summary");
+      const criteriaGridEl = document.getElementById("criteria-grid");
+
+      const strengthsListEl = document.getElementById("strengths-list");
+      const improvementsListEl = document.getElementById("improvements-list");
+
       const errorTableBodyEl = document.getElementById("error-table-body");
       const rewriteToggle = document.getElementById("rewrite-toggle");
       const copyRewriteBtn = document.getElementById("copy-rewrite-btn");
       const rewriteBodyEl = document.getElementById("rewrite-body");
 
       /* -----------------------------
-       * Helpers
+       * Active Student Accessors
        * ----------------------------- */
-      function getVisibleErrors() {
-        if (!state.activeGroup) return ERRORS;
-        return ERRORS.filter((err) => err.group === state.activeGroup);
+      function getActiveStudent() {
+        return state.students[state.activeStudentIndex] || state.students[0];
       }
 
-      function computeWordCount() {
-        const plain = ESSAY_TOKENS.map((t) =>
-          t.type === "text" ? t.value : t.error.wrong
-        ).join("");
+      function getVisibleErrors(student) {
+        if (!student || !Array.isArray(student.errors)) return [];
+        if (!state.activeGroup) return student.errors;
+        return student.errors.filter((err) => err.group === state.activeGroup);
+      }
+
+      function computeWordCount(student) {
+        if (!student || !Array.isArray(student.tokens)) return 0;
+        const plain = student.tokens
+          .map((t) => (t.type === "text" ? t.value : t.error.wrong))
+          .join("");
         const words = plain.trim().split(/\s+/).filter(Boolean);
         return words.length;
       }
 
+      /* -----------------------------
+       * SVG Icon Builders
+       * ----------------------------- */
       function createSvgDocIcon(isSamplePrompt) {
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", "22");
@@ -2023,9 +2287,49 @@
         return svg;
       }
 
+      function createSvgCloseIcon() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "14");
+        svg.setAttribute("height", "14");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2.2");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+
+        const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l1.setAttribute("x1", "18");
+        l1.setAttribute("y1", "6");
+        l1.setAttribute("x2", "6");
+        l1.setAttribute("y2", "18");
+
+        const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l2.setAttribute("x1", "6");
+        l2.setAttribute("y1", "6");
+        l2.setAttribute("x2", "18");
+        l2.setAttribute("y2", "18");
+
+        svg.append(l1, l2);
+        return svg;
+      }
+
       /* -----------------------------
        * Render Functions
        * ----------------------------- */
+      function renderModeHeader() {
+        if (state.isSampleMode) {
+          modeBadgeEl.textContent = "Bản xem trước giao diện · dữ liệu mẫu";
+          modeBadgeEl.classList.remove("is-ai");
+          restoreSampleBtn.classList.add("is-hidden");
+        } else {
+          modeBadgeEl.textContent = "Kết quả chấm bằng Gemini AI";
+          modeBadgeEl.classList.add("is-ai");
+          restoreSampleBtn.classList.remove("is-hidden");
+        }
+      }
+
       function renderLevel() {
         const info = LEVEL_INFO[state.level];
         levelBtns.forEach((btn) => {
@@ -2034,20 +2338,59 @@
           btn.setAttribute("aria-checked", active ? "true" : "false");
         });
         levelDescEl.textContent = info.desc;
-        studentMetaEl.textContent = `Đề 3 · Your week · ${info.label}`;
+
+        const student = getActiveStudent();
+        const topic = student && student.topicTitle ? student.topicTitle : "Bài viết";
+        studentMetaEl.textContent = `${topic} · ${info.label}`;
         detailLevelNoteEl.textContent = `Giải thích ở mức ${info.label}`;
       }
 
-      function renderFilterChipsAndRatio() {
+      function renderStudentTabs() {
+        studentTabsEl.textContent = "";
+        state.students.forEach((student, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "student-tab" + (idx === state.activeStudentIndex ? " is-active" : "");
+          btn.setAttribute("role", "tab");
+          btn.setAttribute("aria-selected", idx === state.activeStudentIndex ? "true" : "false");
+
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = student.name;
+
+          const subSpan = document.createElement("span");
+          subSpan.className = "tab-pill-sub";
+          if (student.status === "graded") {
+            subSpan.textContent = `${student.errors.length} lỗi`;
+          } else {
+            subSpan.textContent = "chưa chấm";
+          }
+
+          btn.append(nameSpan, subSpan);
+          btn.addEventListener("click", () => {
+            state.activeStudentIndex = idx;
+            state.activeGroup = null;
+            if (student.status === "graded" && student.errors.length > 0) {
+              state.selectedErrorId = student.errors[0].id;
+            } else {
+              state.selectedErrorId = null;
+            }
+            renderActiveStudent();
+          });
+
+          studentTabsEl.appendChild(btn);
+        });
+      }
+
+      function renderFilterChipsAndRatio(student) {
         filterRowEl.textContent = "";
         ratioBarEl.textContent = "";
 
+        const errors = student.errors;
         const counts = new Map(GROUP_ORDER.map((g) => [g, 0]));
-        ERRORS.forEach((err) => {
+        errors.forEach((err) => {
           counts.set(err.group, (counts.get(err.group) || 0) + 1);
         });
 
-        // "All" chip
         const allBtn = document.createElement("button");
         allBtn.type = "button";
         allBtn.className = "filter-chip" + (state.activeGroup === null ? " is-active" : "");
@@ -2057,16 +2400,18 @@
         allText.textContent = "Tất cả";
         const allCount = document.createElement("span");
         allCount.className = "chip-count";
-        allCount.textContent = String(ERRORS.length);
+        allCount.textContent = String(errors.length);
         allBtn.append(allText, allCount);
 
         allBtn.addEventListener("click", () => {
           state.activeGroup = null;
-          syncAllViews();
+          if (errors.length && !errors.some((e) => e.id === state.selectedErrorId)) {
+            state.selectedErrorId = errors[0].id;
+          }
+          syncReadingViews(student);
         });
         filterRowEl.appendChild(allBtn);
 
-        // Group chips + Ratio segments
         GROUP_ORDER.forEach((group) => {
           const count = counts.get(group) || 0;
           const isActive = state.activeGroup === group;
@@ -2093,32 +2438,35 @@
 
           chip.addEventListener("click", () => {
             state.activeGroup = state.activeGroup === group ? null : group;
-            const visible = getVisibleErrors();
+            const visible = getVisibleErrors(student);
             if (visible.length && !visible.some((e) => e.id === state.selectedErrorId)) {
               state.selectedErrorId = visible[0].id;
             }
-            syncAllViews();
+            syncReadingViews(student);
           });
 
           filterRowEl.appendChild(chip);
 
-          // Ratio bar segment
-          const seg = document.createElement("div");
-          seg.className = "ratio-seg";
-          if (state.activeGroup !== null && state.activeGroup !== group) {
-            seg.classList.add("is-dimmed");
+          if (count > 0) {
+            const seg = document.createElement("div");
+            seg.className = "ratio-seg";
+            if (state.activeGroup !== null && state.activeGroup !== group) {
+              seg.classList.add("is-dimmed");
+            }
+            seg.dataset.group = group;
+            seg.style.flexGrow = String(count);
+            seg.title = `${group}: ${count}/${errors.length}`;
+            ratioBarEl.appendChild(seg);
           }
-          seg.dataset.group = group;
-          seg.style.flexGrow = String(count);
-          seg.title = `${group}: ${count}/${ERRORS.length}`;
-          ratioBarEl.appendChild(seg);
         });
+
+        ratioBarEl.classList.toggle("is-hidden", errors.length === 0);
       }
 
-      function renderEssay() {
+      function renderEssay(student) {
         essayBodyEl.textContent = "";
 
-        ESSAY_TOKENS.forEach((token) => {
+        student.tokens.forEach((token) => {
           if (token.type === "text") {
             essayBodyEl.appendChild(document.createTextNode(token.value));
             return;
@@ -2165,13 +2513,33 @@
         });
       }
 
-      function renderDetailPanel() {
-        const err = ERRORS.find((e) => e.id === state.selectedErrorId) || ERRORS[0];
-        const groupVi = GROUP_META[err.group].vi;
+      function renderDetailPanel(student) {
+        const errors = student.errors;
+        if (!errors || errors.length === 0) {
+          detailDotEl.dataset.group = "Grammar";
+          detailGroupTextEl.textContent = "Không phát hiện lỗi";
+          detailCounterEl.textContent = "0 lỗi";
+          detailWrongBoxEl.classList.add("is-hidden");
+          detailFixTextEl.textContent = "Bài viết đạt chuẩn tốt ở mức đang chọn.";
+          detailWhyEl.textContent = "Không có lỗi ngữ pháp, từ vựng, logic hay chính tả cần chỉnh sửa.";
+          detailExampleEl.textContent = "Keep up the good work.";
+          prevErrBtn.disabled = true;
+          nextErrBtn.disabled = true;
+          return;
+        }
+
+        detailWrongBoxEl.classList.remove("is-hidden");
+        const visible = getVisibleErrors(student);
+        const err =
+          errors.find((e) => e.id === state.selectedErrorId) ||
+          visible[0] ||
+          errors[0];
+        state.selectedErrorId = err.id;
+        const groupVi = (GROUP_META[err.group] && GROUP_META[err.group].vi) || err.group;
 
         detailDotEl.dataset.group = err.group;
         detailGroupTextEl.textContent = `${err.group} · ${groupVi}`;
-        detailCounterEl.textContent = `Lỗi ${err.id}/${ERRORS.length}`;
+        detailCounterEl.textContent = `Lỗi ${err.id}/${errors.length}`;
 
         detailWrongBoxEl.dataset.group = err.group;
         detailWrongTextEl.textContent = err.wrong;
@@ -2179,15 +2547,28 @@
         detailWhyEl.textContent = err.why;
         detailExampleEl.textContent = err.example;
 
-        const visible = getVisibleErrors();
         const idx = visible.findIndex((e) => e.id === err.id);
         prevErrBtn.disabled = idx <= 0;
         nextErrBtn.disabled = idx === -1 || idx >= visible.length - 1;
       }
 
-      function renderTable() {
+      function renderTable(student) {
         errorTableBodyEl.textContent = "";
-        const visible = getVisibleErrors();
+        const visible = getVisibleErrors(student);
+
+        if (visible.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.style.color = "var(--text-muted)";
+          td.style.textAlign = "center";
+          td.textContent = student.errors.length === 0
+            ? "Không có lỗi nào trong bài viết này."
+            : "Không có lỗi nào thuộc nhóm đang lọc.";
+          tr.appendChild(td);
+          errorTableBodyEl.appendChild(tr);
+          return;
+        }
 
         visible.forEach((err) => {
           const tr = document.createElement("tr");
@@ -2208,7 +2589,6 @@
             }
           });
 
-          // # column
           const tdNum = document.createElement("td");
           const numBtn = document.createElement("button");
           numBtn.type = "button";
@@ -2222,12 +2602,10 @@
           });
           tdNum.appendChild(numBtn);
 
-          // Group column
           const tdGroup = document.createElement("td");
           tdGroup.className = "table-group-cell";
           tdGroup.textContent = err.group;
 
-          // Wrong column
           const tdWrong = document.createElement("td");
           const wrongSpan = document.createElement("span");
           wrongSpan.className = "table-wrong";
@@ -2235,12 +2613,10 @@
           wrongSpan.textContent = err.wrong;
           tdWrong.appendChild(wrongSpan);
 
-          // Fix column
           const tdFix = document.createElement("td");
           tdFix.className = "table-fix";
           tdFix.textContent = err.fix;
 
-          // Reason column (first sentence)
           const tdReason = document.createElement("td");
           tdReason.textContent = getFirstSentence(err.why);
 
@@ -2249,11 +2625,60 @@
         });
       }
 
-      function renderRewrite() {
+      function renderPromptComparison(student) {
+        promptMetaEl.textContent = student.promptMeta || student.topicTitle || "Đối chiếu yêu cầu";
+        promptSummaryEl.textContent = student.promptSummary || "";
+        criteriaGridEl.textContent = "";
+
+        (student.promptCriteria || []).forEach((item) => {
+          const box = document.createElement("div");
+          box.className = "criteria-item";
+
+          const top = document.createElement("div");
+          top.className = "criteria-top";
+
+          const title = document.createElement("span");
+          title.className = "criteria-title";
+          title.textContent = item.title;
+
+          const statusKey = item.status === "yes" || item.status === "no" ? item.status : "partial";
+          const pill = document.createElement("span");
+          pill.className = `status-pill is-${statusKey}`;
+          pill.textContent = STATUS_LABEL[statusKey];
+
+          top.append(title, pill);
+
+          const desc = document.createElement("p");
+          desc.className = "criteria-desc";
+          desc.textContent = item.desc;
+
+          box.append(top, desc);
+          criteriaGridEl.appendChild(box);
+        });
+      }
+
+      function renderGeneralFeedback(student) {
+        strengthsListEl.textContent = "";
+        improvementsListEl.textContent = "";
+
+        (student.strengths || []).forEach((txt) => {
+          const li = document.createElement("li");
+          li.textContent = txt;
+          strengthsListEl.appendChild(li);
+        });
+
+        (student.improvements || []).forEach((txt) => {
+          const li = document.createElement("li");
+          li.textContent = txt;
+          improvementsListEl.appendChild(li);
+        });
+      }
+
+      function renderRewrite(student) {
         rewriteBodyEl.textContent = "";
         rewriteBodyEl.classList.toggle("show-highlights", state.highlightRewrite);
 
-        ESSAY_TOKENS.forEach((token) => {
+        student.tokens.forEach((token) => {
           if (token.type === "text") {
             rewriteBodyEl.appendChild(document.createTextNode(token.value));
             return;
@@ -2265,17 +2690,20 @@
         });
       }
 
-      function getPlainRewriteText() {
-        return ESSAY_TOKENS.map((t) =>
-          t.type === "text" ? t.value : t.error.fix
-        ).join("");
+      function getPlainRewriteText(student) {
+        if (!student || !Array.isArray(student.tokens)) return "";
+        return student.tokens
+          .map((t) => (t.type === "text" ? t.value : t.error.fix))
+          .join("");
       }
 
       function selectError(id, scrollEssayIntoView = false) {
+        const student = getActiveStudent();
+        if (!student || student.status !== "graded") return;
         state.selectedErrorId = id;
-        renderEssay();
-        renderDetailPanel();
-        renderTable();
+        renderEssay(student);
+        renderDetailPanel(student);
+        renderTable(student);
 
         if (scrollEssayIntoView) {
           const targetMark = essayBodyEl.querySelector(`.err-mark[data-error-id="${id}"]`);
@@ -2285,15 +2713,42 @@
         }
       }
 
-      function syncAllViews() {
-        renderFilterChipsAndRatio();
-        renderEssay();
-        renderDetailPanel();
-        renderTable();
+      function syncReadingViews(student) {
+        renderFilterChipsAndRatio(student);
+        renderEssay(student);
+        renderDetailPanel(student);
+        renderTable(student);
+      }
+
+      function renderActiveStudent() {
+        renderStudentTabs();
+        renderLevel();
+        const student = getActiveStudent();
+
+        if (!student || student.status !== "graded") {
+          gradedPanel.classList.add("is-hidden");
+          emptyStatePanel.classList.remove("is-hidden");
+          emptyStateTitleEl.textContent = (student && student.emptyTitle) || "Chưa có dữ liệu bài làm";
+          emptyStateDescEl.textContent = (student && student.emptyDesc) || "";
+          document.body.classList.remove("has-bottom-sheet");
+          return;
+        }
+
+        emptyStatePanel.classList.add("is-hidden");
+        gradedPanel.classList.remove("is-hidden");
+        document.body.classList.add("has-bottom-sheet");
+
+        essayTitleEl.textContent = `Bài làm của ${student.name}`;
+        wordCountEl.textContent = `${computeWordCount(student)} từ`;
+
+        syncReadingViews(student);
+        renderPromptComparison(student);
+        renderGeneralFeedback(student);
+        renderRewrite(student);
       }
 
       /* -----------------------------
-       * Student Tabs & Level Events
+       * Level, Navigation & Rewrite Events
        * ----------------------------- */
       levelBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -2302,25 +2757,9 @@
         });
       });
 
-      function switchStudent(student) {
-        state.student = student;
-        const isQuan = student === "quan";
-
-        tabQuan.classList.toggle("is-active", isQuan);
-        tabQuan.setAttribute("aria-selected", isQuan ? "true" : "false");
-        tabHan.classList.toggle("is-active", !isQuan);
-        tabHan.setAttribute("aria-selected", !isQuan ? "true" : "false");
-
-        quanPanel.classList.toggle("is-hidden", !isQuan);
-        hanPanel.classList.toggle("is-hidden", isQuan);
-        document.body.classList.toggle("has-bottom-sheet", isQuan);
-      }
-
-      tabQuan.addEventListener("click", () => switchStudent("quan"));
-      tabHan.addEventListener("click", () => switchStudent("han"));
-
       prevErrBtn.addEventListener("click", () => {
-        const visible = getVisibleErrors();
+        const student = getActiveStudent();
+        const visible = getVisibleErrors(student);
         const idx = visible.findIndex((e) => e.id === state.selectedErrorId);
         if (idx > 0) {
           selectError(visible[idx - 1].id, true);
@@ -2328,16 +2767,14 @@
       });
 
       nextErrBtn.addEventListener("click", () => {
-        const visible = getVisibleErrors();
+        const student = getActiveStudent();
+        const visible = getVisibleErrors(student);
         const idx = visible.findIndex((e) => e.id === state.selectedErrorId);
         if (idx !== -1 && idx < visible.length - 1) {
           selectError(visible[idx + 1].id, true);
         }
       });
 
-      /* -----------------------------
-       * Rewrite Toggle & Clipboard
-       * ----------------------------- */
       rewriteToggle.addEventListener("change", () => {
         state.highlightRewrite = rewriteToggle.checked;
         rewriteBodyEl.classList.toggle("show-highlights", state.highlightRewrite);
@@ -2354,7 +2791,7 @@
       }
 
       copyRewriteBtn.addEventListener("click", async () => {
-        const plain = getPlainRewriteText();
+        const plain = getPlainRewriteText(getActiveStudent());
         try {
           if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
             throw new Error("Clipboard unavailable");
@@ -2368,21 +2805,83 @@
             copyRewriteBtn.classList.remove("is-copied");
           }, 2000);
         } catch (err) {
-          // Fallback: highlight text for manual copying
           selectRewriteNodeText();
         }
       });
 
+      restoreSampleBtn.addEventListener("click", () => {
+        state.students = createSampleStudents();
+        state.activeStudentIndex = 0;
+        state.activeGroup = null;
+        state.selectedErrorId = 1;
+        state.isSampleMode = true;
+        renderModeHeader();
+        renderActiveStudent();
+        showFeedback("Đã khôi phục dữ liệu mẫu của bạn Quân.", false);
+      });
+
       /* -----------------------------
-       * Grade Button Preview Notice
+       * AI Settings Persistence
        * ----------------------------- */
-      gradeBtn.addEventListener("click", () => {
-        gradeFeedbackEl.classList.add("is-visible");
+      function updateKeyStatus() {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+          aiKeyStatusEl.textContent = "Đã lưu key";
+          aiKeyStatusEl.classList.add("is-ready");
+        } else {
+          aiKeyStatusEl.textContent = "Chưa nhập key";
+          aiKeyStatusEl.classList.remove("is-ready");
+        }
+      }
+
+      function syncCustomModelVisibility() {
+        customModelInput.classList.toggle("is-hidden", modelSelect.value !== "custom");
+      }
+
+      apiKeyInput.value = storageGet(STORAGE_KEY_API);
+      const savedModel = storageGet(STORAGE_KEY_MODEL, "auto");
+      if (Array.from(modelSelect.options).some((opt) => opt.value === savedModel)) {
+        modelSelect.value = savedModel;
+      }
+      customModelInput.value = storageGet(STORAGE_KEY_CUSTOM_MODEL);
+      updateKeyStatus();
+      syncCustomModelVisibility();
+
+      apiKeyInput.addEventListener("input", () => {
+        storageSet(STORAGE_KEY_API, apiKeyInput.value.trim());
+        updateKeyStatus();
+      });
+
+      toggleKeyBtn.addEventListener("click", () => {
+        const showing = apiKeyInput.type === "text";
+        apiKeyInput.type = showing ? "password" : "text";
+        toggleKeyBtn.textContent = showing ? "Hiện" : "Ẩn";
+      });
+
+      modelSelect.addEventListener("change", () => {
+        storageSet(STORAGE_KEY_MODEL, modelSelect.value);
+        syncCustomModelVisibility();
+      });
+
+      customModelInput.addEventListener("input", () => {
+        storageSet(STORAGE_KEY_CUSTOM_MODEL, customModelInput.value.trim());
       });
 
       /* -----------------------------
        * Upload / Drag-Drop / Paste Zones
        * ----------------------------- */
+      function setItemStatus(entry, text, tags = [], isDone = false) {
+        entry.statusEl.textContent = "";
+        entry.statusEl.classList.toggle("is-done", isDone);
+        entry.statusEl.appendChild(document.createTextNode(text));
+        tags.forEach((tagText) => {
+          const tag = document.createElement("span");
+          tag.className = "student-tag";
+          tag.textContent = tagText;
+          entry.statusEl.appendChild(tag);
+        });
+      }
+
       function addSampleFileItem(listEl, options) {
         const item = document.createElement("div");
         item.className = "file-item";
@@ -2396,7 +2895,7 @@
 
         const nameEl = document.createElement("div");
         nameEl.className = "file-name";
-        nameEl.textContent = options.name;
+        nameEl.textContent = options.name + " (mẫu)";
 
         const statusEl = document.createElement("div");
         statusEl.className = "file-status is-done";
@@ -2412,11 +2911,19 @@
         }
 
         info.append(nameEl, statusEl);
-        item.append(thumb, info);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "file-remove";
+        removeBtn.setAttribute("aria-label", `Ẩn file mẫu ${options.name}`);
+        removeBtn.appendChild(createSvgCloseIcon());
+        removeBtn.addEventListener("click", () => item.remove());
+
+        item.append(thumb, info, removeBtn);
         listEl.appendChild(item);
       }
 
-      function addUploadedFileItem(listEl, file, statusMessage) {
+      function addUploadedFileItem(listEl, storeArray, file, statusMessage) {
         const item = document.createElement("div");
         item.className = "file-item";
 
@@ -2432,9 +2939,10 @@
         const info = document.createElement("div");
         info.className = "file-info";
 
+        const displayName = file.name && file.name.trim() ? file.name : "anh-dan-man-hinh.png";
         const nameEl = document.createElement("div");
         nameEl.className = "file-name";
-        nameEl.textContent = file.name && file.name.trim() ? file.name : "anh-dan-man-hinh.png";
+        nameEl.textContent = displayName;
 
         const statusEl = document.createElement("div");
         statusEl.className = "file-status";
@@ -2442,14 +2950,23 @@
 
         info.append(nameEl, statusEl);
 
+        const entry = {
+          file,
+          name: displayName,
+          statusEl,
+          itemEl: item
+        };
+        storeArray.push(entry);
+
         const removeBtn = document.createElement("button");
         removeBtn.type = "button";
         removeBtn.className = "file-remove";
-        removeBtn.setAttribute("aria-label", `Xóa ${nameEl.textContent}`);
-        removeBtn.innerHTML =
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        removeBtn.setAttribute("aria-label", `Xóa ${displayName}`);
+        removeBtn.appendChild(createSvgCloseIcon());
         removeBtn.addEventListener("click", () => {
           URL.revokeObjectURL(objectUrl);
+          const idx = storeArray.indexOf(entry);
+          if (idx !== -1) storeArray.splice(idx, 1);
           item.remove();
         });
 
@@ -2457,11 +2974,11 @@
         listEl.appendChild(item);
       }
 
-      function setupDropzone(zoneEl, inputEl, listEl, statusMessage) {
+      function setupDropzone(zoneEl, inputEl, listEl, storeArray, statusMessage) {
         const handleFiles = (fileList) => {
           Array.from(fileList).forEach((file) => {
             if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name)) {
-              addUploadedFileItem(listEl, file, statusMessage);
+              addUploadedFileItem(listEl, storeArray, file, statusMessage);
             }
           });
         };
@@ -2526,6 +3043,7 @@
         document.getElementById("prompt-dropzone"),
         document.getElementById("prompt-file-input"),
         promptFileList,
+        state.promptUploads,
         "Đã thêm · chờ đọc đề"
       );
 
@@ -2533,10 +3051,10 @@
         document.getElementById("work-dropzone"),
         document.getElementById("work-file-input"),
         workFileList,
+        state.workUploads,
         "Đã thêm · chờ nhận diện tên học sinh"
       );
 
-      // Paste image support for student work zone (and global Ctrl+V when not in text fields)
       function extractClipboardImages(clipboardData) {
         if (!clipboardData) return [];
         const images = [];
@@ -2566,13 +3084,456 @@
       });
 
       /* -----------------------------
+       * Gemini AI Integration
+       * ----------------------------- */
+      function showFeedback(message, isError = false) {
+        gradeFeedbackEl.textContent = message;
+        gradeFeedbackEl.classList.toggle("is-error", isError);
+        gradeFeedbackEl.classList.add("is-visible");
+      }
+
+      function fileToBase64Raw(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = String(reader.result || "");
+            const commaIdx = result.indexOf(",");
+            if (commaIdx === -1) {
+              reject(new Error("Không đọc được dữ liệu ảnh."));
+              return;
+            }
+            resolve({
+              mimeType: file.type || "image/png",
+              data: result.slice(commaIdx + 1)
+            });
+          };
+          reader.onerror = () => reject(new Error("Lỗi đọc file ảnh."));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function prepareImagePart(file) {
+        return new Promise((resolve, reject) => {
+          if (file.size <= 1200 * 1024 && /^image\/(png|jpeg|webp)$/i.test(file.type)) {
+            fileToBase64Raw(file).then((inlineData) => resolve({ inlineData })).catch(reject);
+            return;
+          }
+
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            const maxDim = 1800;
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              const scale = maxDim / Math.max(width, height);
+              width = Math.round(width * scale);
+              height = Math.round(height * scale);
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              fileToBase64Raw(file).then((inlineData) => resolve({ inlineData })).catch(reject);
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+            const commaIdx = dataUrl.indexOf(",");
+            resolve({
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: dataUrl.slice(commaIdx + 1)
+              }
+            });
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            fileToBase64Raw(file).then((inlineData) => resolve({ inlineData })).catch(reject);
+          };
+          img.src = url;
+        });
+      }
+
+      function parseModelScore(name) {
+        const clean = name.replace(/^models\//, "");
+        const verMatch = clean.match(/gemini-(\d+(?:\.\d+)?)/i);
+        const ver = verMatch ? parseFloat(verMatch[1]) : 0;
+        let penalty = 0;
+        if (/lite/i.test(clean)) penalty -= 0.25;
+        if (/exp|preview/i.test(clean)) penalty -= 0.1;
+        if (/latest/i.test(clean)) penalty -= 0.05;
+        return ver + penalty;
+      }
+
+      async function resolveModelCandidates(apiKey) {
+        const selected = modelSelect.value;
+        if (selected === "custom") {
+          const custom = customModelInput.value.trim().replace(/^models\//, "");
+          if (!custom) {
+            throw new Error("Bạn đang chọn nhập model thủ công nhưng chưa điền tên model.");
+          }
+          return [custom];
+        }
+        if (selected !== "auto") {
+          return [selected];
+        }
+
+        const fallback = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-2.0-flash"];
+        try {
+          const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+            headers: { "x-goog-api-key": apiKey }
+          });
+          if (!res.ok) return fallback;
+          const data = await res.json();
+          const models = (data.models || [])
+            .filter((m) => {
+              const name = m.name || "";
+              const methods = m.supportedGenerationMethods || [];
+              return (
+                methods.includes("generateContent") &&
+                /gemini/i.test(name) &&
+                /flash/i.test(name) &&
+                !/tts|image|audio|robotics|computer-use|embedding|live/i.test(name)
+              );
+            })
+            .sort((a, b) => parseModelScore(b.name) - parseModelScore(a.name))
+            .map((m) => m.name.replace(/^models\//, ""));
+
+          if (models.length === 0) return fallback;
+          const unique = Array.from(new Set([...models.slice(0, 3), ...fallback]));
+          return unique;
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function buildGradingSchema() {
+        return {
+          type: "OBJECT",
+          properties: {
+            students: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  name: { type: "STRING" },
+                  topicTitle: { type: "STRING" },
+                  promptSummary: { type: "STRING" },
+                  promptCriteria: {
+                    type: "ARRAY",
+                    items: {
+                      type: "OBJECT",
+                      properties: {
+                        title: { type: "STRING" },
+                        status: { type: "STRING", enum: ["yes", "partial", "no"] },
+                        desc: { type: "STRING" }
+                      },
+                      required: ["title", "status", "desc"]
+                    }
+                  },
+                  segments: {
+                    type: "ARRAY",
+                    items: {
+                      type: "OBJECT",
+                      properties: {
+                        type: { type: "STRING", enum: ["text", "error"] },
+                        text: { type: "STRING" },
+                        group: {
+                          type: "STRING",
+                          enum: ["Grammar", "Vocabulary", "Logic", "Spelling & Punctuation"]
+                        },
+                        fix: { type: "STRING" },
+                        why: { type: "STRING" },
+                        example: { type: "STRING" }
+                      },
+                      required: ["type", "text"]
+                    }
+                  },
+                  strengths: {
+                    type: "ARRAY",
+                    items: { type: "STRING" }
+                  },
+                  improvements: {
+                    type: "ARRAY",
+                    items: { type: "STRING" }
+                  }
+                },
+                required: [
+                  "name",
+                  "topicTitle",
+                  "promptSummary",
+                  "promptCriteria",
+                  "segments",
+                  "strengths",
+                  "improvements"
+                ]
+              }
+            }
+          },
+          required: ["students"]
+        };
+      }
+
+      function buildPromptInstructions() {
+        const levelInfo = LEVEL_INFO[state.level];
+        const studentHint = studentNameInput.value.trim();
+        const extraNotes = extraNotesInput.value.trim();
+        const pastedEssay = essayTextInput.value.trim();
+
+        const lines = [
+          "Bạn là trợ lý chấm bài viết tiếng Anh (Writing) dành cho giáo viên Việt Nam theo giáo trình Cambridge Prepare.",
+          `Level học sinh đang chọn: ${levelInfo.label} (${levelInfo.prepare}).`,
+          `Yêu cầu mức giải thích lỗi ("why"): ${levelInfo.desc}`,
+          studentHint
+            ? `Tên học sinh giáo viên nhập sẵn: "${studentHint}" (dùng tên này nếu trong ảnh/bài không có tên khác rõ ràng).`
+            : "Tên học sinh chưa nhập: hãy tự đọc tên học sinh từ cột tên hoặc tiêu đề trong ảnh bài làm (nếu một ảnh có nhiều học sinh, tách thành từng phần tử riêng trong mảng students; nếu hoàn toàn không có tên thì đặt là \"Học sinh 1\").",
+          extraNotes ? `Ghi chú thêm của giáo viên: ${extraNotes}` : "",
+          state.promptUploads.length > 0
+            ? "Có đính kèm ảnh đề bài: hãy đọc đề bài và khung gợi ý (nếu có, ví dụ 'Prepare to write'). Nếu ảnh có nhiều đề, tự chọn đúng đề khớp với bài của từng học sinh."
+            : "Không có ảnh đề bài: tự suy ra chủ đề bài viết trong topicTitle và đối chiếu theo 4 tiêu chí cấu trúc bài viết phù hợp ở level này.",
+          pastedEssay ? `Văn bản bài làm giáo viên dán trực tiếp:\n"""\n${pastedEssay}\n"""` : "",
+          "",
+          "QUY TẮC BẮT BUỘC:",
+          "1. Tuyệt đối KHÔNG chấm điểm, KHÔNG dùng điểm số hay xếp loại A/B/C/D ở bất kỳ trường nào. Không dùng emoji.",
+          "2. Tách toàn bộ bài viết gốc của từng học sinh thành mảng `segments` liên tiếp nhau sao cho khi nối tất cả `seg.text` lại phải KHỚP NGUYÊN VĂN 100% bài học sinh viết (giữ nguyên mọi dấu cách, dấu câu và lỗi sai gốc, không tự sửa ngầm trong `type: \"text\"`).",
+          "3. Mỗi lỗi cần sửa là một phần tử `type: \"error\"` trong `segments`, phân loại chính xác vào 1 trong 4 nhóm: `Grammar`, `Vocabulary`, `Logic`, `Spelling & Punctuation`.",
+          "4. Với mỗi `type: \"error\"`: `text` là đoạn sai nguyên văn của học sinh; `fix` là đoạn sửa ngắn gọn, tự nhiên, giữ nguyên ý và giọng văn học sinh; `why` giải thích bằng tiếng Việt đúng level đang chọn (câu đầu tiên phải tóm tắt ngắn gọn lý do để hiển thị trong bảng); `example` là 1 câu ví dụ tiếng Anh minh họa đúng ngữ cảnh và level.",
+          "5. `promptCriteria` gồm 4 mục đánh giá đối chiếu với đề bài/khung gợi ý (`status`: \"yes\" | \"partial\" | \"no\", `desc`: 1 câu tiếng Việt ngắn).",
+          "6. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`)."
+        ];
+
+        return lines.filter(Boolean).join("\n");
+      }
+
+      function normalizeStudentResult(raw, index) {
+        const rawSegments = Array.isArray(raw.segments) ? raw.segments : [];
+        const tokens = [];
+        const errors = [];
+        let errorNum = 0;
+
+        rawSegments.forEach((seg) => {
+          const textVal = String(seg && seg.text ? seg.text : "");
+          if (!textVal) return;
+
+          if (seg.type === "error") {
+            errorNum += 1;
+            const group = GROUP_ORDER.includes(seg.group) ? seg.group : "Grammar";
+            const errObj = {
+              id: errorNum,
+              group,
+              wrong: textVal,
+              fix: String(seg.fix || textVal),
+              why: String(seg.why || "Cần điều chỉnh lại cách diễn đạt cho tự nhiên và chính xác hơn."),
+              example: String(seg.example || String(seg.fix || textVal))
+            };
+            errors.push(errObj);
+            tokens.push({ type: "error", error: errObj });
+          } else {
+            tokens.push({ type: "text", value: textVal });
+          }
+        });
+
+        const topic = String(raw.topicTitle || "Bài viết tiếng Anh").trim();
+        return {
+          id: `ai-student-${index + 1}`,
+          name: String(raw.name || `Học sinh ${index + 1}`).trim(),
+          status: "graded",
+          topicTitle: topic,
+          promptMeta: state.promptUploads.length > 0 ? `Đọc từ ảnh đề · ${topic}` : topic,
+          promptSummary: String(raw.promptSummary || "Đối chiếu theo nội dung bài viết và yêu cầu đề bài."),
+          promptCriteria: Array.isArray(raw.promptCriteria) && raw.promptCriteria.length
+            ? raw.promptCriteria.map((c) => ({
+                title: String(c.title || "Tiêu chí"),
+                status: c.status === "yes" || c.status === "no" ? c.status : "partial",
+                desc: String(c.desc || "")
+              }))
+            : [
+                {
+                  title: "Bám nội dung bài viết",
+                  status: "yes",
+                  desc: "Bài viết triển khai được các ý chính theo chủ đề."
+                }
+              ],
+          strengths: Array.isArray(raw.strengths) && raw.strengths.length
+            ? raw.strengths.map((s) => String(s))
+            : ["Bài viết có ý rõ ràng và giữ được mạch kể tự nhiên."],
+          improvements: Array.isArray(raw.improvements) && raw.improvements.length
+            ? raw.improvements.map((s) => String(s))
+            : ["Xem lại các lỗi được đánh dấu theo thứ tự ưu tiên ở bảng bên dưới."],
+          tokens,
+          errors
+        };
+      }
+
+      async function callGeminiWithModel(apiKey, modelId, parts) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent`;
+        const body = {
+          contents: [{ role: "user", parts }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: "application/json",
+            responseSchema: buildGradingSchema()
+          }
+        };
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = (data && data.error && data.error.message) || `HTTP ${res.status}`;
+          const err = new Error(msg);
+          err.status = res.status;
+          throw err;
+        }
+
+        const candidate = data && data.candidates && data.candidates[0];
+        const rawText =
+          candidate &&
+          candidate.content &&
+          Array.isArray(candidate.content.parts) &&
+          candidate.content.parts.map((p) => p.text || "").join("");
+
+        if (!rawText) {
+          throw new Error("Gemini không trả về nội dung văn bản.");
+        }
+
+        const cleaned = rawText
+          .replace(/^```(?:json)?\s*/i, "")
+          .replace(/\s*```$/i, "")
+          .trim();
+
+        return JSON.parse(cleaned);
+      }
+
+      async function handleGradeWithAI() {
+        if (state.isGrading) return;
+
+        const apiKey = apiKeyInput.value.trim();
+        const pastedEssay = essayTextInput.value.trim();
+        const hasRealWork = state.workUploads.length > 0 || pastedEssay.length > 0;
+
+        if (!apiKey) {
+          document.getElementById("ai-settings-box").open = true;
+          apiKeyInput.focus();
+          showFeedback(
+            "Bạn chưa nhập Gemini API Key. Hãy dán key vào mục \"Kết nối AI (Gemini)\" ở trên để chấm bài thật.",
+            true
+          );
+          return;
+        }
+
+        if (!hasRealWork) {
+          showFeedback(
+            "Hiện mới có file mẫu. Hãy thêm ít nhất 1 ảnh bài làm (hoặc dán văn bản bài làm) để AI chấm.",
+            true
+          );
+          return;
+        }
+
+        state.isGrading = true;
+        gradeBtn.disabled = true;
+        gradeBtn.textContent = "Đang chấm bài với AI...";
+        showFeedback("Đang chuẩn bị ảnh và chọn model Gemini phù hợp...", false);
+
+        try {
+          const parts = [{ text: buildPromptInstructions() }];
+
+          if (state.promptUploads.length > 0) {
+            parts.push({ text: "[ẢNH ĐỀ BÀI]" });
+            for (const entry of state.promptUploads) {
+              setItemStatus(entry, "Đang gửi đọc đề...", [], false);
+              parts.push(await prepareImagePart(entry.file));
+            }
+          }
+
+          if (state.workUploads.length > 0) {
+            parts.push({ text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" });
+            for (const entry of state.workUploads) {
+              setItemStatus(entry, "Đang nhận diện bài làm...", [], false);
+              parts.push(await prepareImagePart(entry.file));
+            }
+          }
+
+          const candidates = await resolveModelCandidates(apiKey);
+          let parsed = null;
+          let usedModel = candidates[0];
+          let lastError = null;
+
+          for (const modelId of candidates) {
+            usedModel = modelId;
+            showFeedback(`Đang phân tích và chấm bài bằng ${modelId}...`, false);
+            try {
+              parsed = await callGeminiWithModel(apiKey, modelId, parts);
+              break;
+            } catch (err) {
+              lastError = err;
+              if (err.status === 401 || err.status === 403) {
+                throw err;
+              }
+              if (err.status !== 404 && candidates.length === 1) {
+                throw err;
+              }
+            }
+          }
+
+          if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
+            throw lastError || new Error("AI không tách được bài làm học sinh nào.");
+          }
+
+          const gradedStudents = parsed.students.map((st, i) => normalizeStudentResult(st, i));
+          const studentNames = gradedStudents.map((s) => s.name);
+
+          state.promptUploads.forEach((entry) => {
+            setItemStatus(entry, "Đã đọc đề bài", [], true);
+          });
+
+          state.workUploads.forEach((entry) => {
+            setItemStatus(entry, `Đã chấm ${gradedStudents.length} bài:`, studentNames, true);
+          });
+
+          state.students = gradedStudents;
+          state.activeStudentIndex = 0;
+          state.activeGroup = null;
+          state.selectedErrorId = gradedStudents[0].errors.length ? gradedStudents[0].errors[0].id : null;
+          state.isSampleMode = false;
+
+          renderModeHeader();
+          renderActiveStudent();
+          showFeedback(
+            `Chấm xong ${gradedStudents.length} bài bằng ${usedModel}.`,
+            false
+          );
+        } catch (err) {
+          state.promptUploads.forEach((entry) => {
+            setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false);
+          });
+          state.workUploads.forEach((entry) => {
+            setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
+          });
+          showFeedback(`Không thể chấm bài: ${err.message}`, true);
+        } finally {
+          state.isGrading = false;
+          gradeBtn.disabled = false;
+          gradeBtn.textContent = "Chấm bài";
+        }
+      }
+
+      gradeBtn.addEventListener("click", handleGradeWithAI);
+
+      /* -----------------------------
        * Initial Render
        * ----------------------------- */
-      quanTabCount.textContent = `${ERRORS.length} lỗi`;
-      wordCountEl.textContent = `${computeWordCount()} từ`;
-      renderLevel();
-      syncAllViews();
-      renderRewrite();
+      renderModeHeader();
+      renderActiveStudent();
     })();
   </script>
 </body>
