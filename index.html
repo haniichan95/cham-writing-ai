@@ -566,7 +566,7 @@
           <textarea id="prompt-text-input" class="textarea-input" rows="3" placeholder="Dán hoặc nhập nội dung đề bài bằng chữ vào đây..."></textarea>
         </div>
         <button type="button" class="btn-add-student" id="toggle-prompt-text-btn">+ Nhập / dán chữ đề bài</button>
-        <p class="field-note">Ảnh có nhiều đề thì hệ thống tự chọn đề khớp với bài của từng bạn.</p>
+        <p class="field-note">Các ảnh và chữ trong mục Đề bài được liên kết với nhau (đề chính + khung Prepare to write + gợi ý) để tạo thành bộ tiêu chí thống nhất cho dạng bài đang chấm.</p>
       </div>
 
       <div class="field-group">
@@ -1949,7 +1949,12 @@
         const info = document.createElement("div");
         info.className = "file-info";
 
-        const displayName = file.name && file.name.trim() ? file.name : "anh-dan-man-hinh.png";
+        const rawName = file.name && file.name.trim() ? file.name.trim() : "";
+        const prefix = listEl === promptFileList ? "anh-de" : "anh-bai-lam";
+        const displayName =
+          !rawName || /^image\.(png|jpe?g|webp)$/i.test(rawName)
+            ? `${prefix}-${storeArray.length + 1}.png`
+            : rawName;
         const nameEl = document.createElement("div");
         nameEl.className = "file-name";
         nameEl.textContent = displayName;
@@ -2449,7 +2454,7 @@
             : "Hãy tự đọc tên học sinh cho từng bài làm (từ cột tên, tiêu đề ảnh, hoặc tên giáo viên nhập kèm bài viết; nếu một ảnh có nhiều học sinh, tách thành từng phần tử riêng trong mảng students; nếu hoàn toàn không có tên thì đặt là \"Học sinh 1\", \"Học sinh 2\"...).",
           extraNotes ? `Ghi chú thêm của giáo viên: ${extraNotes}` : "",
           hasPrompt
-            ? "Có đính kèm đề bài (ảnh và/hoặc văn bản): hãy đọc kỹ toàn bộ yêu cầu đề bài và khung gợi ý (nếu có). Nếu có nhiều đề, tự xác định mỗi học sinh làm đề nào và chấm đúng theo đề đó."
+            ? `Có đính kèm đề bài (${state.promptUploads.length} ảnh${promptText ? " + văn bản" : ""}): TẤT CẢ các ảnh và văn bản trong mục Đề bài là các phần liên kết bổ sung cho nhau của CÙNG MỘT nhiệm vụ viết (ví dụ: ảnh đề bài chính + phần câu hỏi/yêu cầu chi tiết + khung hướng dẫn 'Prepare to write' / cấu trúc / từ vựng gợi ý). Phải ĐỌC VÀ GỘP LIÊN KẾT tất cả lại thành một bộ tiêu chí thống nhất cho dạng bài này (nếu có nhiều đề nhỏ bên trong như Đề 1/2/3 thì vẫn phải liên kết đề học sinh chọn với khung 'Prepare to write' dùng chung).`
             : "Không có đề bài kèm theo: hãy đọc bài làm (và ghi chú thêm nếu có) để tự suy ra dạng bài (`taskType`), chủ đề (`topicTitle`) và các tiêu chí phù hợp.",
           promptText ? `Nội dung đề bài dạng chữ giáo viên cung cấp:\n"""\n${promptText}\n"""` : "",
           pendingWorkCount > 0
@@ -2473,11 +2478,12 @@
           "3. Tách toàn bộ bài viết gốc của từng học sinh thành mảng `segments` liên tiếp nhau sao cho khi nối tất cả `seg.text` lại phải KHỚP NGUYÊN VĂN 100% bài học sinh viết (giữ nguyên mọi dấu cách, dấu câu và lỗi sai gốc, không tự sửa ngầm trong `type: \"text\"`).",
           "4. Mỗi lỗi cần sửa là một phần tử `type: \"error\"` trong `segments`, phân loại chính xác vào 1 trong 4 nhóm: `Grammar`, `Vocabulary`, `Logic`, `Spelling & Punctuation`.",
           "5. Với mỗi `type: \"error\"`: `text` là đoạn sai nguyên văn của học sinh; `fix` là đoạn sửa ngắn gọn, tự nhiên, giữ nguyên ý và giọng văn học sinh; `why` giải thích bằng tiếng Việt đúng level đang chọn (câu đầu tiên phải tóm tắt ngắn gọn lý do để hiển thị trong bảng); `example` là 1 câu ví dụ tiếng Anh minh họa đúng ngữ cảnh và level.",
-          "6. TIÊU CHÍ ĐỐI CHIẾU ĐỀ BÀI (`taskType` & `promptCriteria`) — PHẢI THAY ĐỔI LINH HOẠT THEO TỪNG DẠNG BÀI, KHÔNG DÙNG TIÊU CHÍ CỐ ĐỊNH:",
+          "6. LIÊN KẾT ĐỀ BÀI & TẠO BỘ TIÊU CHÍ ĐỐI CHIẾU (`taskType`, `promptSummary`, `promptCriteria`) — PHẢI TỔNG HỢP TỪ TẤT CẢ PHẦN ĐỀ BÀI VÀ THAY ĐỔI THEO TỪNG DẠNG BÀI:",
           "   - Xác định đúng `taskType` (VD: \"Email / Letter\", \"Story\", \"Article\", \"Opinion Essay\", \"Review\", \"Report\", \"Note / Message\", \"Paragraph\").",
-          "   - Đọc hiểu mọi yêu cầu cụ thể trong đề bài (đối tượng người đọc, các câu hỏi/ý bắt buộc phải trả lời, thì động từ yêu cầu, giọng văn thân mật/trang trọng, độ dài từ trong đề hoặc ghi chú, các gợi ý trong khung đề) để tự tạo 3 đến 5 tiêu chí ĐẶC THÙ cho đúng dạng bài đó.",
-          "   - Ví dụ: nếu là Email -> kiểm tra lời chào/kết thư đúng người nhận, trả lời đủ các câu hỏi trong đề, giọng văn phù hợp; nếu là Story -> kiểm tra bố cục mở-thân-kết, dùng đúng thì quá khứ, từ nối thời gian, chi tiết miêu tả; nếu là Opinion Essay -> kiểm tra câu nêu quan điểm, lý lẽ & ví dụ, từ nối lập luận, câu kết; nếu là Review -> giới thiệu đối tượng, miêu tả điểm nổi bật, nhận xét khen/chê có lý do, lời khuyên.",
-          "   - Mỗi phần tử trong `promptCriteria` gồm `title`, `status` (\"yes\" | \"partial\" | \"no\"), `desc` (1 câu tiếng Việt chỉ rõ bằng chứng trong bài của bạn đó).",
+          "   - `promptSummary`: viết 1-2 câu tiếng Việt tóm tắt trọn vẹn nhiệm vụ viết sau khi đã liên kết đề bài chính, các yêu cầu chi tiết và khung gợi ý 'Prepare to write' (nếu có).",
+          "   - `promptCriteria`: tạo 4 đến 6 tiêu chí ĐẶC THÙ được liên kết từ MỌI mảnh đề bài đang có: (a) các ý/câu hỏi nội dung bắt buộc của đề chính, (b) yêu cầu về hình thức/bố cục/cấu trúc của dạng bài trong khung 'Prepare to write' hoặc hướng dẫn kèm theo, (c) yêu cầu sử dụng ngôn ngữ/từ nối/thì động từ/cảm xúc gợi ý trong khung, (d) độ dài từ hoặc lưu ý riêng trong Ghi chú thêm (nếu có).",
+          "   - Ví dụ: nếu là Email -> kiểm tra lời chào/kết thư đúng đối tượng, trả lời đủ các ý hỏi trong đề, dùng cấu trúc/cụm gợi ý trong khung Prepare to write, giọng văn tự nhiên; nếu là Story -> kiểm tra bố cục mở-thân-kết, dùng đúng thì quá khứ, từ nối thời gian, chi tiết miêu tả theo gợi ý khung; nếu là Opinion Essay -> kiểm tra câu nêu quan điểm, lý lẽ & ví dụ, từ nối lập luận, câu kết.",
+          "   - Mỗi phần tử trong `promptCriteria` gồm `title`, `status` (\"yes\" | \"partial\" | \"no\"), `desc` (1 câu tiếng Việt chỉ rõ bằng chứng cụ thể trong bài làm của học sinh đối chiếu với yêu cầu đề + khung gợi ý).",
           "7. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`)."
         );
 
@@ -2646,9 +2652,13 @@
           const parts = [{ text: buildPromptInstructions(pendingTextEntries, pendingUploads.length) }];
 
           if (state.promptUploads.length > 0) {
-            parts.push({ text: "[ẢNH ĐỀ BÀI]" });
-            for (const entry of state.promptUploads) {
-              setItemStatus(entry, "Đang gửi đọc đề...", [], false);
+            parts.push({
+              text: `[TẬP HỢP ${state.promptUploads.length} ẢNH ĐỀ BÀI — HÃY LIÊN KẾT TẤT CẢ CÁC ẢNH NÀY THÀNH BỘ YÊU CẦU & TIÊU CHÍ THỐNG NHẤT]`
+            });
+            for (let i = 0; i < state.promptUploads.length; i += 1) {
+              const entry = state.promptUploads[i];
+              setItemStatus(entry, `Đang gửi mảnh đề #${i + 1}...`, [], false);
+              parts.push({ text: `[PHẦN ĐỀ BÀI #${i + 1}: ${entry.name}]` });
               parts.push(await prepareImagePart(entry.file));
             }
           }
