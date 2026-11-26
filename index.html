@@ -1964,7 +1964,7 @@
           const img = new Image();
           img.onload = () => {
             URL.revokeObjectURL(url);
-            const maxDim = 1400;
+            const maxDim = 1200;
             let { width, height } = img;
             if (width > maxDim || height > maxDim) {
               const scale = maxDim / Math.max(width, height);
@@ -1980,7 +1980,7 @@
               return;
             }
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
             const commaIdx = dataUrl.indexOf(",");
             resolve({
               inlineData: {
@@ -2003,8 +2003,9 @@
         const ver = verMatch ? parseFloat(verMatch[1]) : 0;
         let penalty = 0;
         if (/lite/i.test(clean)) penalty -= 0.25;
-        if (/exp|preview/i.test(clean)) penalty -= 0.1;
-        if (/latest/i.test(clean)) penalty -= 0.05;
+        // Ưu tiên model ổn định (GA) trước model preview/exp trong chế độ Tự động để tránh chậm hoặc giới hạn quota
+        if (/exp|preview/i.test(clean)) penalty -= 1.2;
+        if (/latest/i.test(clean)) penalty -= 0.1;
         return ver + penalty;
       }
 
@@ -2113,84 +2114,15 @@
 
         try {
           const models = await fetchAvailableFlashModels(apiKey, signal);
-          if (models.length === 0) return Array.from(new Set([...preferred, ...fallback]));
+          if (models.length === 0) return Array.from(new Set([...preferred, ...fallback])).slice(0, 4);
           populateModelDropdown(models);
-          return Array.from(new Set([...preferred, ...models.slice(0, 4), ...fallback]));
+          return Array.from(new Set([...preferred, ...models.slice(0, 3), ...fallback])).slice(0, 4);
         } catch (err) {
           if (err.status === 400 || err.status === 401 || err.status === 403) {
             throw err;
           }
-          return Array.from(new Set([...preferred, ...fallback]));
+          return Array.from(new Set([...preferred, ...fallback])).slice(0, 4);
         }
-      }
-
-      function buildGradingSchema() {
-        return {
-          type: "OBJECT",
-          properties: {
-            students: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  name: { type: "STRING" },
-                  taskType: { type: "STRING" },
-                  topicTitle: { type: "STRING" },
-                  promptSummary: { type: "STRING" },
-                  promptCriteria: {
-                    type: "ARRAY",
-                    items: {
-                      type: "OBJECT",
-                      properties: {
-                        title: { type: "STRING" },
-                        status: { type: "STRING", enum: ["yes", "partial", "no"] },
-                        desc: { type: "STRING" }
-                      },
-                      required: ["title", "status", "desc"]
-                    }
-                  },
-                  segments: {
-                    type: "ARRAY",
-                    items: {
-                      type: "OBJECT",
-                      properties: {
-                        type: { type: "STRING", enum: ["text", "error"] },
-                        text: { type: "STRING" },
-                        group: {
-                          type: "STRING",
-                          enum: ["Grammar", "Vocabulary", "Logic", "Spelling & Punctuation"]
-                        },
-                        fix: { type: "STRING" },
-                        why: { type: "STRING" },
-                        example: { type: "STRING" }
-                      },
-                      required: ["type", "text"]
-                    }
-                  },
-                  strengths: {
-                    type: "ARRAY",
-                    items: { type: "STRING" }
-                  },
-                  improvements: {
-                    type: "ARRAY",
-                    items: { type: "STRING" }
-                  }
-                },
-                required: [
-                  "name",
-                  "taskType",
-                  "topicTitle",
-                  "promptSummary",
-                  "promptCriteria",
-                  "segments",
-                  "strengths",
-                  "improvements"
-                ]
-              }
-            }
-          },
-          required: ["students"]
-        };
       }
 
       function buildPromptInstructions(pendingTextEntries, pendingWorkCount) {
@@ -2239,7 +2171,11 @@
           "   - `promptCriteria`: tạo 4 đến 6 tiêu chí ĐẶC THÙ được liên kết từ MỌI mảnh đề bài đang có: (a) các ý/câu hỏi nội dung bắt buộc của đề chính, (b) yêu cầu về hình thức/bố cục/cấu trúc của dạng bài trong khung 'Prepare to write' hoặc hướng dẫn kèm theo, (c) yêu cầu sử dụng ngôn ngữ/từ nối/thì động từ/cảm xúc gợi ý trong khung, (d) độ dài từ hoặc lưu ý riêng trong Ghi chú thêm (nếu có).",
           "   - Ví dụ: nếu là Email -> kiểm tra lời chào/kết thư đúng đối tượng, trả lời đủ các ý hỏi trong đề, dùng cấu trúc/cụm gợi ý trong khung Prepare to write, giọng văn tự nhiên; nếu là Story -> kiểm tra bố cục mở-thân-kết, dùng đúng thì quá khứ, từ nối thời gian, chi tiết miêu tả theo gợi ý khung; nếu là Opinion Essay -> kiểm tra câu nêu quan điểm, lý lẽ & ví dụ, từ nối lập luận, câu kết.",
           "   - Mỗi phần tử trong `promptCriteria` gồm `title`, `status` (\"yes\" | \"partial\" | \"no\"), `desc` (1 câu tiếng Việt chỉ rõ bằng chứng cụ thể trong bài làm của học sinh đối chiếu với yêu cầu đề + khung gợi ý).",
-          "7. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`)."
+          "7. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`).",
+          "",
+          "ĐỊNH DẠNG JSON TRẢ VỀ BẮT BUỘC (chỉ trả về JSON thuần, không bọc markdown):",
+          '{"students":[{"name":"string","taskType":"string","topicTitle":"string","promptSummary":"string","promptCriteria":[{"title":"string","status":"yes|partial|no","desc":"string"}],"segments":[{"type":"text|error","text":"string","group":"Grammar|Vocabulary|Logic|Spelling & Punctuation","fix":"string","why":"string","example":"string"}],"strengths":["string"],"improvements":["string"]}]}',
+          "Lưu ý: với phần tử `type: \"text\"` trong `segments`, chỉ cần `{\"type\":\"text\",\"text\":\"...\"}`."
         );
 
         return lines.filter(Boolean).join("\n");
@@ -2362,29 +2298,47 @@
         }
       }
 
-      async function callGeminiWithModel(apiKey, modelId, parts, parentSignal) {
-        const bodyWithSchema = {
+      function getThinkingConfig(modelId) {
+        if (/gemini-3/i.test(modelId)) {
+          return { thinkingLevel: "low" };
+        }
+        if (/gemini-2\.5/i.test(modelId) && !/pro/i.test(modelId)) {
+          return { thinkingBudget: 0 };
+        }
+        return null;
+      }
+
+      async function callGeminiWithModel(apiKey, modelId, parts, parentSignal, timeoutMs = 45000) {
+        const generationConfig = {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        };
+        const thinkingConfig = getThinkingConfig(modelId);
+        if (thinkingConfig) {
+          generationConfig.thinkingConfig = thinkingConfig;
+        }
+
+        const bodyFast = {
           contents: [{ role: "user", parts }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            responseSchema: buildGradingSchema()
-          }
+          generationConfig
         };
 
         let data;
         try {
-          data = await fetchGenerateContent(apiKey, modelId, bodyWithSchema, parentSignal, 55000);
+          data = await fetchGenerateContent(apiKey, modelId, bodyFast, parentSignal, timeoutMs);
         } catch (err) {
-          if (err.status === 400 && /schema/i.test(err.message || "")) {
-            const bodyJsonOnly = {
-              contents: [{ role: "user", parts }],
-              generationConfig: {
-                temperature: 0.2,
-                responseMimeType: "application/json"
-              }
+          if (err.status === 400 && thinkingConfig && /thinking|budget|level/i.test(err.message || "")) {
+            const plainConfig = {
+              temperature: 0.2,
+              responseMimeType: "application/json"
             };
-            data = await fetchGenerateContent(apiKey, modelId, bodyJsonOnly, parentSignal, 55000);
+            data = await fetchGenerateContent(
+              apiKey,
+              modelId,
+              { contents: [{ role: "user", parts }], generationConfig: plainConfig },
+              parentSignal,
+              timeoutMs
+            );
           } else {
             throw err;
           }
@@ -2407,7 +2361,16 @@
           .replace(/\s*```$/i, "")
           .trim();
 
-        return JSON.parse(cleaned);
+        try {
+          return JSON.parse(cleaned);
+        } catch (parseErr) {
+          const firstBrace = cleaned.indexOf("{");
+          const lastBrace = cleaned.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace > firstBrace) {
+            return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+          }
+          throw parseErr;
+        }
       }
 
       async function handleGradeWithAI() {
@@ -2496,16 +2459,25 @@
           let parsed = null;
           let usedModel = candidates[0];
           let lastError = null;
+          const attemptErrors = [];
+          const perModelTimeout = candidates.length === 1 ? 75000 : 45000;
 
           for (const modelId of candidates) {
             usedModel = modelId;
             currentStageMsg = `Đang phân tích và chấm bài bằng ${modelId}`;
             updateTimerUI();
             try {
-              parsed = await callGeminiWithModel(apiKey, modelId, parts, state.abortController.signal);
+              parsed = await callGeminiWithModel(
+                apiKey,
+                modelId,
+                parts,
+                state.abortController.signal,
+                perModelTimeout
+              );
               break;
             } catch (err) {
               lastError = err;
+              attemptErrors.push(`${modelId}: ${err.message}`);
               if (err.isUserCancel || err.status === 401 || err.status === 403) {
                 throw err;
               }
@@ -2516,6 +2488,9 @@
           }
 
           if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
+            if (attemptErrors.length > 1) {
+              throw new Error(attemptErrors.join(" | "));
+            }
             throw lastError || new Error("AI không tách được bài làm học sinh nào.");
           }
 
