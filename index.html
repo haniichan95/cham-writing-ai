@@ -511,8 +511,7 @@
         <span>Chấm Writing</span>
       </div>
       <div class="topbar-actions">
-        <button type="button" class="restore-sample-btn is-hidden" id="restore-sample-btn">Xem lại dữ liệu mẫu</button>
-        <span class="preview-badge" id="mode-badge">Bản xem trước giao diện · dữ liệu mẫu</span>
+        <span class="preview-badge" id="mode-badge">Sẵn sàng chấm bài</span>
       </div>
     </div>
   </header>
@@ -807,198 +806,6 @@
       };
 
       /* -----------------------------
-       * Sample Data (Preview Mode)
-       * ----------------------------- */
-      const SAMPLE_ESSAY_SOURCE =
-        "Are you one of those people [[1:who is usually tired when you wake up]]? Nowadays, teenagers often feel exhausted after a long time [[2:studying and working]]. [[3:I am the person like this]], too. I usually feel busy and bored on school days and it is very hard to [[4:wake up especially]] on winter days like now. [[5:in]] my school week, I have a lot of [[6:sessions]], homework [[7:and also have many extra class]]. In my view, Monday is always the worst day of the week. At school, I have [[8:more than one session]] and two extra classes after school. It [[9:makes me don't have]] free time. To reduce [[10:stressed]] and relax, I usually play games, [[11:read book]], play chess online or listen to music. [[12:It help]] me slow down and enjoy life, [[13:spend time with family and myself]].";
-
-      const SAMPLE_ERRORS = [
-        {
-          id: 1,
-          group: "Grammar",
-          fix: "who are usually tired when they wake up",
-          why: "\"People\" là danh từ số nhiều nên động từ phải là \"are\", không phải \"is\". Ngoài ra \"you\" nên đổi thành \"they\" để cùng chỉ \"those people\".",
-          example: "Students who are tired often forget their homework."
-        },
-        {
-          id: 2,
-          group: "Vocabulary",
-          fix: "studying and doing homework",
-          why: "\"Working\" nghĩa là đi làm kiếm tiền. Học sinh ở nhà thường \"do homework\" (làm bài tập) hoặc \"study\" (học bài).",
-          example: "I stay up late doing homework."
-        },
-        {
-          id: 3,
-          group: "Grammar",
-          fix: "I am one of them",
-          why: "Cụm \"the person like this\" không tự nhiên và chỉ có một người. Câu hỏi đầu đã nói \"one of those people\", nên trả lời \"I am one of them\" sẽ nối ý chặt hơn.",
-          example: "Many teenagers feel tired in the morning. I am one of them."
-        },
-        {
-          id: 4,
-          group: "Spelling & Punctuation",
-          fix: "wake up, especially",
-          why: "Khi thêm ý nhấn mạnh bằng \"especially\", cần có dấu phẩy ở phía trước.",
-          example: "I like fruit, especially mangoes."
-        },
-        {
-          id: 5,
-          group: "Spelling & Punctuation",
-          fix: "In",
-          why: "Chữ cái đầu của câu phải viết hoa.",
-          example: "In my opinion, English is useful."
-        },
-        {
-          id: 6,
-          group: "Vocabulary",
-          fix: "lessons",
-          why: "\"Session\" thường chỉ một buổi hoạt động (training session). Tiết học ở trường là \"lessons\" hoặc \"classes\".",
-          example: "We have five lessons every day."
-        },
-        {
-          id: 7,
-          group: "Grammar",
-          fix: "and many extra classes",
-          why: "Trong câu liệt kê chỉ cần dùng \"have\" một lần. \"Many\" đi với danh từ đếm được số nhiều nên \"class\" phải thành \"classes\".",
-          example: "I have a lot of homework and many extra classes."
-        },
-        {
-          id: 8,
-          group: "Vocabulary",
-          fix: "several lessons",
-          why: "\"More than one session\" vừa dùng sai từ vừa hơi mơ hồ. \"Several lessons\" tự nhiên hơn khi nói về các tiết học trong ngày.",
-          example: "I have several lessons in the morning."
-        },
-        {
-          id: 9,
-          group: "Grammar",
-          fix: "leaves me with no",
-          why: "Sau \"make + người\" dùng động từ nguyên mẫu, không chia \"don't have\". Muốn nói không còn thời gian rảnh, dùng \"leaves me with no\".",
-          example: "Homework leaves me with no time to play."
-        },
-        {
-          id: 10,
-          group: "Grammar",
-          fix: "stress",
-          why: "Sau \"to reduce\" cần một danh từ. \"Stressed\" là tính từ (cảm thấy căng thẳng), còn \"stress\" là danh từ.",
-          example: "Music helps me reduce stress."
-        },
-        {
-          id: 11,
-          group: "Grammar",
-          fix: "read books",
-          why: "Khi nói chung về một hoạt động, danh từ đếm được dùng số nhiều: \"read books\", \"play games\".",
-          example: "I like to read books and watch films."
-        },
-        {
-          id: 12,
-          group: "Logic",
-          fix: "These activities help",
-          why: "Câu trước liệt kê nhiều hoạt động nên \"It\" không rõ chỉ cái nào. Dùng \"These activities\" để chỉ cả nhóm. Nếu vẫn giữ \"It\" thì động từ phải là \"helps\".",
-          example: "I play chess and read books. These activities help me relax."
-        },
-        {
-          id: 13,
-          group: "Logic",
-          fix: "spend time with my family and by myself",
-          why: "\"With myself\" nghe như đang chơi cùng chính mình. Nói một mình là \"by myself\", và cần \"my\" trước \"family\".",
-          example: "On Sundays I stay with my family, and sometimes I read by myself."
-        }
-      ];
-
-      function parseEssayTokens(source, errors) {
-        const errorMap = new Map(errors.map((e) => [e.id, Object.assign({}, e)]));
-        const tokens = [];
-        const regex = /\[\[(\d+):([^\]]+)\]\]/g;
-        let lastIndex = 0;
-        let match;
-
-        while ((match = regex.exec(source)) !== null) {
-          if (match.index > lastIndex) {
-            tokens.push({ type: "text", value: source.slice(lastIndex, match.index) });
-          }
-          const id = Number(match[1]);
-          const wrongText = match[2];
-          const err = errorMap.get(id);
-          if (err) {
-            err.wrong = wrongText;
-            tokens.push({ type: "error", error: err });
-          } else {
-            tokens.push({ type: "text", value: wrongText });
-          }
-          lastIndex = regex.lastIndex;
-        }
-
-        if (lastIndex < source.length) {
-          tokens.push({ type: "text", value: source.slice(lastIndex) });
-        }
-
-        const orderedErrors = tokens
-          .filter((t) => t.type === "error")
-          .map((t) => t.error);
-
-        return { tokens, errors: orderedErrors };
-      }
-
-      function createSampleStudents() {
-        const parsed = parseEssayTokens(SAMPLE_ESSAY_SOURCE, SAMPLE_ERRORS);
-        return [
-          {
-            id: "quan",
-            name: "Quân",
-            status: "graded",
-            taskType: "Article",
-            topicTitle: "Đề 3 · Your week",
-            promptMeta: "Đọc từ ảnh đề · Dạng bài: Article · Đề 3 · Your week",
-            promptSummary:
-              "Viết bài báo về tuần đi học: có thấy mệt không, ngày nào tệ nhất, em làm gì để thư giãn.",
-            promptCriteria: [
-              {
-                title: "Bám nội dung đề",
-                status: "yes",
-                desc: "Có đủ 3 ý: lịch học, ngày tệ nhất (Monday) và cách thư giãn."
-              },
-              {
-                title: "Đặt câu hỏi thu hút người đọc",
-                status: "yes",
-                desc: "Mở bài bằng \"Are you one of those people who...?\"."
-              },
-              {
-                title: "Làm bài viết thú vị hơn",
-                status: "partial",
-                desc: "Có \"exhausted\", nhưng còn thiếu cụm cảm xúc như \"I absolutely love...\" hoặc \"full of energy\"."
-              },
-              {
-                title: "Nêu ý kiến riêng",
-                status: "yes",
-                desc: "Có \"In my view, Monday is always the worst day\"."
-              }
-            ],
-            strengths: [
-              "Mở bài bằng một câu hỏi trực tiếp với người đọc, tạo cảm giác gần gũi.",
-              "Bám sát đề: có lịch học trong tuần, ngày mệt nhất (Monday) và cách thư giãn.",
-              "Biết dùng cụm như \"In my view\" và \"especially\" để nêu ý kiến và nhấn mạnh."
-            ],
-            improvements: [
-              "Hòa hợp chủ ngữ và động từ, giữ đại từ nhất quán: is/are, help/helps, you/they (lỗi 1, 12).",
-              "Danh từ số nhiều và câu liệt kê: classes, books, không lặp \"have\" (lỗi 7, 11).",
-              "Dùng từ đúng bối cảnh trường học (lessons, không phải sessions) và nối ý bằng \"These activities\" (lỗi 6, 8, 12)."
-            ],
-            tokens: parsed.tokens,
-            errors: parsed.errors
-          },
-          {
-            id: "han",
-            name: "Hân",
-            status: "pending_preview",
-            emptyTitle: "Bài của Hân chưa có trong bản xem trước",
-            emptyDesc:
-              "Khi bấm Chấm bài với ảnh thật và Gemini API Key, hệ thống sẽ tự tách bài làm của từng bạn trong ảnh và tạo tab riêng để giáo viên chuyển xem nhanh kết quả của mỗi học sinh."
-          }
-        ];
-      }
-
-      /* -----------------------------
        * Storage Helpers
        * ----------------------------- */
       function storageGet(key, fallback = "") {
@@ -1032,12 +839,11 @@
        * ----------------------------- */
       const state = {
         level: "B1",
-        students: createSampleStudents(),
+        students: [],
         activeStudentIndex: 0,
         activeGroup: null,
-        selectedErrorId: 1,
+        selectedErrorId: null,
         highlightRewrite: true,
-        isSampleMode: true,
         isGrading: false,
         promptUploads: [],
         workUploads: [],
@@ -1048,7 +854,6 @@
        * DOM References
        * ----------------------------- */
       const modeBadgeEl = document.getElementById("mode-badge");
-      const restoreSampleBtn = document.getElementById("restore-sample-btn");
 
       const studentNameInput = document.getElementById("student-name-input");
       const extraNotesInput = document.getElementById("extra-notes-input");
@@ -1134,58 +939,6 @@
       /* -----------------------------
        * SVG Icon Builders
        * ----------------------------- */
-      function createSvgDocIcon(isSamplePrompt) {
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "22");
-        svg.setAttribute("height", "26");
-        svg.setAttribute("viewBox", "0 0 22 26");
-        svg.setAttribute("aria-hidden", "true");
-
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        rect.setAttribute("x", "1");
-        rect.setAttribute("y", "1");
-        rect.setAttribute("width", "20");
-        rect.setAttribute("height", "24");
-        rect.setAttribute("rx", "2");
-        rect.setAttribute("fill", "none");
-        rect.setAttribute("stroke", "currentColor");
-        rect.setAttribute("stroke-opacity", "0.35");
-        svg.appendChild(rect);
-
-        const lines = isSamplePrompt
-          ? [
-              { x: 4, y: 5, w: 10, accent: true },
-              { x: 4, y: 9, w: 14 },
-              { x: 4, y: 12, w: 12 },
-              { x: 4, y: 16, w: 14, box: true }
-            ]
-          : [
-              { x: 4, y: 5, w: 6, accent: true },
-              { x: 4, y: 9, w: 14 },
-              { x: 4, y: 12, w: 13 },
-              { x: 4, y: 16, w: 6, accent: true },
-              { x: 4, y: 20, w: 14 }
-            ];
-
-        lines.forEach((l) => {
-          const line = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          line.setAttribute("x", String(l.x));
-          line.setAttribute("y", String(l.y));
-          line.setAttribute("width", String(l.w));
-          line.setAttribute("height", l.box ? "5" : "2");
-          line.setAttribute("rx", "1");
-          if (l.accent) {
-            line.setAttribute("fill", "#0D7A68");
-          } else {
-            line.setAttribute("fill", "currentColor");
-            line.setAttribute("fill-opacity", l.box ? "0.14" : "0.35");
-          }
-          svg.appendChild(line);
-        });
-
-        return svg;
-      }
-
       function createSvgCloseIcon() {
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", "14");
@@ -1218,23 +971,17 @@
        * Render Functions
        * ----------------------------- */
       function renderModeHeader() {
-        if (state.isSampleMode) {
-          modeBadgeEl.textContent = "Bản xem trước giao diện · dữ liệu mẫu";
+        if (state.students.length === 0) {
+          modeBadgeEl.textContent = "Sẵn sàng chấm bài";
           modeBadgeEl.classList.remove("is-ai");
-          restoreSampleBtn.classList.add("is-hidden");
-        } else if (state.students.length === 0) {
-          modeBadgeEl.textContent = "Lớp mới · chưa có bài chấm";
-          modeBadgeEl.classList.remove("is-ai");
-          restoreSampleBtn.classList.remove("is-hidden");
         } else {
           modeBadgeEl.textContent = `Lớp hiện tại · ${state.students.length} học sinh`;
           modeBadgeEl.classList.add("is-ai");
-          restoreSampleBtn.classList.remove("is-hidden");
         }
 
         if (!state.isGrading) {
           gradeBtn.textContent =
-            !state.isSampleMode && state.students.length > 0
+            state.students.length > 0
               ? "Chấm thêm học sinh"
               : "Chấm bài";
         }
@@ -1643,9 +1390,9 @@
         if (!student) {
           gradedPanel.classList.add("is-hidden");
           emptyStatePanel.classList.remove("is-hidden");
-          emptyStateTitleEl.textContent = "Sẵn sàng chấm lớp mới";
+          emptyStateTitleEl.textContent = "Chưa có bài chấm nào";
           emptyStateDescEl.textContent =
-            "Hãy tải ảnh đề bài (nếu có), thêm nhiều ảnh hoặc nhiều bài viết học sinh ở cột bên trái, rồi bấm Chấm bài. Mỗi học sinh sẽ hiển thị thành một tab riêng.";
+            "Hãy nhập hoặc dán đề bài ở mục 03 (ảnh hoặc chữ), thêm ảnh hoặc văn bản bài làm của học sinh ở mục 05, chọn Level rồi bấm Chấm bài. Mỗi học sinh sẽ hiển thị thành một tab riêng.";
           document.body.classList.remove("has-bottom-sheet");
           return;
         }
@@ -1734,22 +1481,6 @@
         }
       });
 
-      function renderSampleFiles() {
-        promptFileList.textContent = "";
-        workFileList.textContent = "";
-        addSampleFileItem(promptFileList, {
-          name: "de-bai-article.png",
-          statusText: "Đọc xong: 3 đề + khung \"Prepare to write\"",
-          isPromptSample: true
-        });
-        addSampleFileItem(workFileList, {
-          name: "gg-docs-your-week.png",
-          statusText: "Đọc xong 2 bài:",
-          tags: ["Quân", "Hân"],
-          isPromptSample: false
-        });
-      }
-
       function clearUploadedFiles() {
         state.promptUploads.forEach((entry) => {
           if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
@@ -1805,7 +1536,6 @@
         state.activeStudentIndex = 0;
         state.activeGroup = null;
         state.selectedErrorId = null;
-        state.isSampleMode = false;
         renderModeHeader();
         renderActiveStudent();
         showFeedback("Đã xóa dữ liệu lớp cũ. Bạn có thể nhập đề và bài làm cho lớp mới.", false);
@@ -1813,22 +1543,6 @@
 
       formResetBtn.addEventListener("click", resetClassSession);
       resetClassBtn.addEventListener("click", resetClassSession);
-
-      restoreSampleBtn.addEventListener("click", () => {
-        if (state.isGrading) return;
-        clearUploadedFiles();
-        clearTextStudents();
-        clearPromptText();
-        renderSampleFiles();
-        state.students = createSampleStudents();
-        state.activeStudentIndex = 0;
-        state.activeGroup = null;
-        state.selectedErrorId = 1;
-        state.isSampleMode = true;
-        renderModeHeader();
-        renderActiveStudent();
-        showFeedback("Đã khôi phục dữ liệu mẫu của bạn Quân.", false);
-      });
 
       /* -----------------------------
        * AI Settings Persistence
@@ -1890,47 +1604,6 @@
           tag.textContent = tagText;
           entry.statusEl.appendChild(tag);
         });
-      }
-
-      function addSampleFileItem(listEl, options) {
-        const item = document.createElement("div");
-        item.className = "file-item";
-
-        const thumb = document.createElement("div");
-        thumb.className = "file-thumb";
-        thumb.appendChild(createSvgDocIcon(options.isPromptSample));
-
-        const info = document.createElement("div");
-        info.className = "file-info";
-
-        const nameEl = document.createElement("div");
-        nameEl.className = "file-name";
-        nameEl.textContent = options.name + " (mẫu)";
-
-        const statusEl = document.createElement("div");
-        statusEl.className = "file-status is-done";
-        statusEl.appendChild(document.createTextNode(options.statusText));
-
-        if (Array.isArray(options.tags)) {
-          options.tags.forEach((tagText) => {
-            const tag = document.createElement("span");
-            tag.className = "student-tag";
-            tag.textContent = tagText;
-            statusEl.appendChild(tag);
-          });
-        }
-
-        info.append(nameEl, statusEl);
-
-        const removeBtn = document.createElement("button");
-        removeBtn.type = "button";
-        removeBtn.className = "file-remove";
-        removeBtn.setAttribute("aria-label", `Ẩn file mẫu ${options.name}`);
-        removeBtn.appendChild(createSvgCloseIcon());
-        removeBtn.addEventListener("click", () => item.remove());
-
-        item.append(thumb, info, removeBtn);
-        listEl.appendChild(item);
       }
 
       function addUploadedFileItem(listEl, storeArray, file, statusMessage) {
@@ -2185,8 +1858,6 @@
 
       const promptFileList = document.getElementById("prompt-file-list");
       const workFileList = document.getElementById("work-file-list");
-
-      renderSampleFiles();
 
       const handlePromptFiles = setupDropzone({
         zoneKey: "prompt",
@@ -2702,7 +2373,7 @@
             throw lastError || new Error("AI không tách được bài làm học sinh nào.");
           }
 
-          const baseIndex = state.isSampleMode ? 0 : state.students.length;
+          const baseIndex = state.students.length;
           const newlyGraded = parsed.students.map((st, i) =>
             normalizeStudentResult(st, baseIndex + i + 1)
           );
@@ -2724,7 +2395,7 @@
             entry.statusSpan.classList.add("is-done");
           });
 
-          if (state.isSampleMode || state.students.length === 0) {
+          if (state.students.length === 0) {
             state.students = newlyGraded;
             state.activeStudentIndex = 0;
           } else {
@@ -2735,7 +2406,6 @@
           const activeStu = getActiveStudent();
           state.activeGroup = null;
           state.selectedErrorId = activeStu && activeStu.errors.length ? activeStu.errors[0].id : null;
-          state.isSampleMode = false;
 
           renderModeHeader();
           renderActiveStudent();
