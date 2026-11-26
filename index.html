@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #F3F6FA;
+      --bg: #F1F5F9;
       --surface: #FFFFFF;
       --surface-subtle: #F8FAFC;
       --surface-hover: #F1F5F9;
@@ -18,1070 +18,368 @@
       --text: #0F172A;
       --text-secondary: #475569;
       --text-muted: #64748B;
-      --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
-      --shadow-sheet: 0 -8px 28px rgba(15, 23, 42, 0.14);
+      --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-sheet: 0 -10px 30px rgba(15, 23, 42, 0.16);
 
       --accent: #0D7A68;
       --accent-hover: #0A6354;
       --accent-text: #0D7A68;
-      --accent-tint: rgba(13, 122, 104, 0.10);
+      --accent-tint: rgba(13, 122, 104, 0.09);
       --accent-tint-strong: rgba(13, 122, 104, 0.17);
       --accent-border: rgba(13, 122, 104, 0.35);
 
       --tab-active-bg: #0F172A;
       --tab-active-text: #FFFFFF;
 
-      /* 4 error groups */
-      --err-grammar: #C7352B;
-      --err-grammar-bg: rgba(199, 53, 43, 0.14);
-      --err-grammar-bg-active: rgba(199, 53, 43, 0.24);
+      --err-grammar: #C7352B; --err-grammar-bg: rgba(199, 53, 43, 0.13); --err-grammar-bg-active: rgba(199, 53, 43, 0.24);
+      --err-vocab: #2160C4; --err-vocab-bg: rgba(33, 96, 196, 0.13); --err-vocab-bg-active: rgba(33, 96, 196, 0.24);
+      --err-logic: #B25A00; --err-logic-bg: rgba(178, 90, 0, 0.13); --err-logic-bg-active: rgba(178, 90, 0, 0.24);
+      --err-spelling: #7440BF; --err-spelling-bg: rgba(116, 64, 191, 0.13); --err-spelling-bg-active: rgba(116, 64, 191, 0.24);
 
-      --err-vocab: #2160C4;
-      --err-vocab-bg: rgba(33, 96, 196, 0.14);
-      --err-vocab-bg-active: rgba(33, 96, 196, 0.24);
+      --lvl-a1: #16A34A; --lvl-a1-dot: #16A34A; --lvl-a1-bg: rgba(22, 163, 74, 0.08);
+      --lvl-a2: #CA8A04; --lvl-a2-dot: #EAB308; --lvl-a2-bg: rgba(234, 179, 8, 0.10);
+      --lvl-b1: #2563EB; --lvl-b1-dot: #2563EB; --lvl-b1-bg: rgba(37, 99, 235, 0.08);
+      --lvl-b2: #EA580C; --lvl-b2-dot: #EA580C; --lvl-b2-bg: rgba(234, 88, 12, 0.09);
 
-      --err-logic: #B25A00;
-      --err-logic-bg: rgba(178, 90, 0, 0.14);
-      --err-logic-bg-active: rgba(178, 90, 0, 0.24);
+      --badge-yes-bg: rgba(13, 122, 104, 0.11); --badge-yes-text: #0A6354;
+      --badge-partial-bg: #E2E8F0; --badge-partial-text: #475569;
+      --badge-no-bg: rgba(199, 53, 43, 0.12); --badge-no-text: #C7352B;
 
-      --err-spelling: #7440BF;
-      --err-spelling-bg: rgba(116, 64, 191, 0.14);
-      --err-spelling-bg-active: rgba(116, 64, 191, 0.24);
-
-      /* 4 Prepare level colors */
-      --lvl-a1: #15803D;
-      --lvl-a1-dot: #16A34A;
-      --lvl-a1-bg: rgba(22, 163, 74, 0.09);
-
-      --lvl-a2: #A16207;
-      --lvl-a2-dot: #EAB308;
-      --lvl-a2-bg: rgba(234, 179, 8, 0.12);
-
-      --lvl-b1: #1D4ED8;
-      --lvl-b1-dot: #2563EB;
-      --lvl-b1-bg: rgba(37, 99, 235, 0.09);
-
-      --lvl-b2: #C2410C;
-      --lvl-b2-dot: #EA580C;
-      --lvl-b2-bg: rgba(234, 88, 12, 0.10);
-
-      --badge-yes-bg: rgba(13, 122, 104, 0.11);
-      --badge-yes-text: #0A6354;
-      --badge-partial-bg: #E2E8F0;
-      --badge-partial-text: #475569;
-      --badge-no-bg: rgba(199, 53, 43, 0.12);
-      --badge-no-text: #C7352B;
-
-      --radius-card: 14px;
-      --radius-sm: 8px;
+      --radius-card: 12px;
       --focus-ring: #0D7A68;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0E141B;
-        --surface: #161E27;
-        --surface-subtle: #1C2632;
-        --surface-hover: #232F3D;
-        --border: #273444;
-        --border-strong: #37485C;
+        --bg: #0B1017;
+        --surface: #121923;
+        --surface-subtle: #182230;
+        --surface-hover: #1F2B3D;
+        --border: #243244;
+        --border-strong: #35475E;
         --text: #F1F5F9;
         --text-secondary: #CBD5E1;
         --text-muted: #94A3B8;
-        --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25);
-        --shadow-sheet: 0 -10px 32px rgba(0, 0, 0, 0.55);
+        --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
+        --shadow-sheet: 0 -10px 32px rgba(0, 0, 0, 0.6);
 
-        --accent: #149680;
-        --accent-hover: #18AC93;
-        --accent-text: #34D399;
-        --accent-tint: rgba(52, 211, 153, 0.14);
-        --accent-tint-strong: rgba(52, 211, 153, 0.22);
-        --accent-border: rgba(52, 211, 153, 0.4);
+        --accent: #149680; --accent-hover: #18AC93; --accent-text: #34D399;
+        --accent-tint: rgba(52, 211, 153, 0.14); --accent-tint-strong: rgba(52, 211, 153, 0.22); --accent-border: rgba(52, 211, 153, 0.4);
+        --tab-active-bg: #F1F5F9; --tab-active-text: #0F172A;
 
-        --tab-active-bg: #F1F5F9;
-        --tab-active-text: #0F172A;
+        --err-grammar: #FF7870; --err-grammar-bg: rgba(255, 120, 112, 0.14); --err-grammar-bg-active: rgba(255, 120, 112, 0.26);
+        --err-vocab: #6BA6FF; --err-vocab-bg: rgba(107, 166, 255, 0.14); --err-vocab-bg-active: rgba(107, 166, 255, 0.26);
+        --err-logic: #FFA84D; --err-logic-bg: rgba(255, 168, 77, 0.14); --err-logic-bg-active: rgba(255, 168, 77, 0.26);
+        --err-spelling: #C08CFF; --err-spelling-bg: rgba(192, 140, 255, 0.14); --err-spelling-bg-active: rgba(192, 140, 255, 0.26);
 
-        --err-grammar: #FF7870;
-        --err-grammar-bg: rgba(255, 120, 112, 0.14);
-        --err-grammar-bg-active: rgba(255, 120, 112, 0.26);
+        --lvl-a1: #4ADE80; --lvl-a1-dot: #4ADE80; --lvl-a1-bg: rgba(74, 222, 128, 0.12);
+        --lvl-a2: #FACC15; --lvl-a2-dot: #FACC15; --lvl-a2-bg: rgba(250, 204, 21, 0.12);
+        --lvl-b1: #60A5FA; --lvl-b1-dot: #60A5FA; --lvl-b1-bg: rgba(96, 165, 250, 0.14);
+        --lvl-b2: #FB923C; --lvl-b2-dot: #FB923C; --lvl-b2-bg: rgba(251, 146, 60, 0.14);
 
-        --err-vocab: #6BA6FF;
-        --err-vocab-bg: rgba(107, 166, 255, 0.14);
-        --err-vocab-bg-active: rgba(107, 166, 255, 0.26);
-
-        --err-logic: #FFA84D;
-        --err-logic-bg: rgba(255, 168, 77, 0.14);
-        --err-logic-bg-active: rgba(255, 168, 77, 0.26);
-
-        --err-spelling: #C08CFF;
-        --err-spelling-bg: rgba(192, 140, 255, 0.14);
-        --err-spelling-bg-active: rgba(192, 140, 255, 0.26);
-
-        --lvl-a1: #4ADE80;
-        --lvl-a1-dot: #4ADE80;
-        --lvl-a1-bg: rgba(74, 222, 128, 0.12);
-
-        --lvl-a2: #FACC15;
-        --lvl-a2-dot: #FACC15;
-        --lvl-a2-bg: rgba(250, 204, 21, 0.12);
-
-        --lvl-b1: #60A5FA;
-        --lvl-b1-dot: #60A5FA;
-        --lvl-b1-bg: rgba(96, 165, 250, 0.14);
-
-        --lvl-b2: #FB923C;
-        --lvl-b2-dot: #FB923C;
-        --lvl-b2-bg: rgba(251, 146, 60, 0.14);
-
-        --badge-yes-bg: rgba(52, 211, 153, 0.15);
-        --badge-yes-text: #34D399;
-        --badge-partial-bg: #273444;
-        --badge-partial-text: #CBD5E1;
-        --badge-no-bg: rgba(255, 120, 112, 0.15);
-        --badge-no-text: #FF7870;
-
+        --badge-yes-bg: rgba(52, 211, 153, 0.15); --badge-yes-text: #34D399;
+        --badge-partial-bg: #243244; --badge-partial-text: #CBD5E1;
+        --badge-no-bg: rgba(255, 120, 112, 0.15); --badge-no-text: #FF7870;
         --focus-ring: #34D399;
       }
     }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    html {
-      -webkit-text-size-adjust: 100%;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
-      margin: 0;
-      font-family: "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 14px;
-      line-height: 1.55;
-      color: var(--text);
-      background-color: var(--bg);
-      overflow-x: clip;
+      margin: 0; font-family: "Be Vietnam Pro", system-ui, sans-serif;
+      font-size: 14px; line-height: 1.55; color: var(--text); background: var(--bg); overflow-x: clip;
     }
+    button, input, textarea, select { font-family: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-    button, input, textarea {
-      font-family: inherit;
-      color: inherit;
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--focus-ring);
-      outline-offset: 2px;
-    }
-
-    /* Top bar */
     .topbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 40;
+      background: color-mix(in srgb, var(--surface) 90%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 40;
     }
-
     .topbar-inner {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      max-width: 1460px; margin: 0 auto; padding: 10px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: -0.01em;
-    }
-
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em; }
     .brand-logo {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      background: var(--accent);
-      color: #FFFFFF;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: #FFFFFF;
+      display: grid; place-items: center; flex-shrink: 0;
     }
-
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+    .brand-tag {
+      font-size: 11px; font-weight: 600; color: var(--accent-text); background: var(--accent-tint);
+      border: 1px solid var(--accent-border); padding: 2px 8px; border-radius: 6px;
     }
-
+    .topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
     .preview-badge {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-muted);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 999px;
-      white-space: nowrap;
+      font-size: 12px; font-weight: 500; color: var(--text-muted);
+      background: var(--surface-subtle); border: 1px solid var(--border); padding: 4px 10px; border-radius: 7px; white-space: nowrap;
     }
-
-    .preview-badge.is-ai {
-      color: var(--accent-text);
-      background: var(--accent-tint);
-      border-color: var(--accent-border);
-    }
-
+    .preview-badge.is-ai { color: var(--accent-text); background: var(--accent-tint); border-color: var(--accent-border); }
     .restore-sample-btn {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 999px;
-      cursor: pointer;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      background: var(--surface); border: 1px solid var(--border); padding: 4px 10px; border-radius: 7px; cursor: pointer;
     }
+    .restore-sample-btn:hover { background: var(--surface-subtle); color: var(--text); }
 
-    .restore-sample-btn:hover {
-      background: var(--surface-subtle);
-      color: var(--text);
-    }
-
-    /* Main Layout */
     .workspace {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 20px 24px 40px;
-      display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 20px;
-      align-items: start;
+      max-width: 1460px; margin: 0 auto; padding: 18px 24px 40px;
+      display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start;
     }
 
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      box-shadow: var(--shadow-card);
-      padding: 18px;
-      min-width: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 18px; min-width: 0;
     }
-
     .card-title-row {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
     }
+    .card-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+    .card-meta { font-size: 12px; color: var(--text-muted); font-weight: 500; }
 
-    .card-title {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
+    /* Step badges in left sidebar */
+    .form-card { display: flex; flex-direction: column; gap: 14px; }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; font-weight: 600; }
+    .step-num {
+      font-size: 10.5px; font-weight: 700; color: var(--text-muted); background: var(--surface-subtle);
+      border: 1px solid var(--border); border-radius: 5px; padding: 0 5px; line-height: 1.5;
     }
+    .field-sub { font-size: 11px; font-weight: 400; color: var(--text-muted); }
 
-    .card-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
+    .text-input, .textarea-input, .select-input {
+      width: 100%; border: 1px solid var(--border); background: var(--surface-subtle);
+      border-radius: 8px; padding: 8px 11px; font-size: 13px; transition: border-color 0.15s ease, background-color 0.15s ease;
     }
+    .text-input:focus, .textarea-input:focus, .select-input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+    .textarea-input { resize: vertical; min-height: 54px; line-height: 1.45; }
 
-    /* Left column form */
-    .form-card {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .field-label {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      flex-wrap: wrap;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .field-sub {
-      font-size: 11.5px;
-      font-weight: 400;
-      color: var(--text-muted);
-    }
-
-    .text-input,
-    .textarea-input {
-      width: 100%;
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 13px;
-      transition: border-color 0.15s ease, background-color 0.15s ease;
-    }
-
-    .text-input::placeholder,
-    .textarea-input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .text-input:focus,
-    .textarea-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: var(--surface);
-    }
-
-    .textarea-input {
-      resize: vertical;
-      min-height: 58px;
-      line-height: 1.45;
-    }
-
-    /* Level grid */
-    .level-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
+    /* Level cards with colored left stripe */
+    .level-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
     .level-btn {
-      text-align: left;
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      border-radius: 10px;
-      padding: 9px 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      transition: border-color 0.15s ease, background-color 0.15s ease;
-      min-width: 0;
+      text-align: left; border: 1px solid var(--border); border-left-width: 3px;
+      background: var(--surface); border-radius: 8px; padding: 8px 9px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 2px; min-width: 0; transition: all 0.15s ease;
     }
-
-    .level-btn:hover {
-      border-color: var(--border-strong);
-      background: var(--surface-subtle);
-    }
-
-    .level-btn-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .level-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      flex-shrink: 0;
-    }
-
-    .level-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      padding-left: 14px;
-    }
-
+    .level-btn[data-level="A1"] { border-left-color: var(--lvl-a1-dot); }
+    .level-btn[data-level="A2"] { border-left-color: var(--lvl-a2-dot); }
+    .level-btn[data-level="B1"] { border-left-color: var(--lvl-b1-dot); }
+    .level-btn[data-level="B2"] { border-left-color: var(--lvl-b2-dot); }
+    .level-btn:hover { background: var(--surface-subtle); }
+    .level-btn-top { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+    .level-dot { width: 7px; height: 7px; border-radius: 999px; flex-shrink: 0; }
+    .level-sub { font-size: 11px; color: var(--text-muted); padding-left: 13px; }
     .level-btn[data-level="A1"] .level-dot { background: var(--lvl-a1-dot); }
     .level-btn[data-level="A2"] .level-dot { background: var(--lvl-a2-dot); }
     .level-btn[data-level="B1"] .level-dot { background: var(--lvl-b1-dot); }
     .level-btn[data-level="B2"] .level-dot { background: var(--lvl-b2-dot); }
-
-    .level-btn[data-level="A1"].is-selected {
-      border-color: var(--lvl-a1);
-      background: var(--lvl-a1-bg);
-    }
-    .level-btn[data-level="A2"].is-selected {
-      border-color: var(--lvl-a2);
-      background: var(--lvl-a2-bg);
-    }
-    .level-btn[data-level="B1"].is-selected {
-      border-color: var(--lvl-b1);
-      background: var(--lvl-b1-bg);
-    }
-    .level-btn[data-level="B2"].is-selected {
-      border-color: var(--lvl-b2);
-      background: var(--lvl-b2-bg);
-    }
-
+    .level-btn[data-level="A1"].is-selected { border-color: var(--lvl-a1); background: var(--lvl-a1-bg); }
+    .level-btn[data-level="A2"].is-selected { border-color: var(--lvl-a2); background: var(--lvl-a2-bg); }
+    .level-btn[data-level="B1"].is-selected { border-color: var(--lvl-b1); background: var(--lvl-b1-bg); }
+    .level-btn[data-level="B2"].is-selected { border-color: var(--lvl-b2); background: var(--lvl-b2-bg); }
     .level-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      background: var(--surface-subtle);
-      border-radius: 8px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      line-height: 1.45;
+      font-size: 11.5px; color: var(--text-secondary); background: var(--surface-subtle);
+      border-radius: 8px; padding: 7px 10px; border: 1px solid var(--border); line-height: 1.45;
     }
 
-    /* File items & dropzones */
-    .file-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
+    .file-list { display: flex; flex-direction: column; gap: 7px; }
     .file-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      border-radius: 10px;
-      min-width: 0;
+      display: flex; align-items: center; gap: 9px; padding: 7px 9px;
+      border: 1px solid var(--border); background: var(--surface-subtle); border-radius: 8px; min-width: 0;
     }
-
     .file-thumb {
-      width: 38px;
-      height: 44px;
-      border-radius: 6px;
-      border: 1px solid var(--border-strong);
-      background: var(--surface);
-      flex-shrink: 0;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 36px; height: 42px; border-radius: 6px; border: 1px solid var(--border-strong);
+      background: var(--surface); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-
-    .file-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .file-info {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .file-name {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .file-status {
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
-
-    .file-status.is-done {
-      color: var(--accent-text);
-    }
-
+    .file-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .file-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .file-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-status { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .file-status.is-done { color: var(--accent-text); }
     .student-tag {
-      display: inline-flex;
-      align-items: center;
-      padding: 1px 7px;
-      border-radius: 999px;
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      color: var(--text);
-      font-size: 11px;
-      font-weight: 600;
+      display: inline-flex; padding: 1px 6px; border-radius: 5px;
+      background: var(--surface); border: 1px solid var(--border-strong); font-size: 10.5px; font-weight: 600; color: var(--text);
     }
-
-    .file-remove {
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-
-    .file-remove:hover {
-      background: var(--surface-hover);
-      color: var(--text);
-    }
+    .file-remove { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 6px; display: grid; place-items: center; }
+    .file-remove:hover { background: var(--surface-hover); color: var(--text); }
 
     .dropzone {
-      border: 1.5px dashed var(--border-strong);
-      border-radius: 10px;
-      padding: 11px 12px;
-      text-align: center;
-      cursor: pointer;
-      background: var(--surface);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+      border: 1.5px dashed var(--border-strong); border-radius: 8px; padding: 10px 11px; text-align: center;
+      cursor: pointer; background: var(--surface); font-size: 12px; color: var(--text-secondary);
+      display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.15s ease;
     }
-
-    .dropzone:hover,
-    .dropzone.is-dragover {
+    .dropzone:hover, .dropzone.is-dragover { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+    .dropzone:focus, .dropzone.is-paste-ready {
+      outline: none;
+      border-style: solid;
       border-color: var(--accent);
       background: var(--accent-tint);
+      box-shadow: 0 0 0 3px var(--accent-tint);
       color: var(--text);
     }
-
-    .dropzone-sub {
-      font-size: 11.5px;
-      color: var(--text-muted);
+    .dropzone-main { font-weight: 500; line-height: 1.4; }
+    .dropzone-actions {
+      display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+      font-size: 11px; color: var(--text-muted);
     }
-
-    .field-note {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      line-height: 1.45;
-      margin: 0;
+    .dropzone-browse-btn {
+      border: 1px solid var(--border-strong); background: var(--surface-subtle); color: var(--text);
+      border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; cursor: pointer;
     }
+    .dropzone-browse-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent-text); }
+    .dropzone-sub { font-size: 11px; color: var(--text-muted); }
+    .dropzone.is-paste-ready .dropzone-sub { color: var(--accent-text); font-weight: 600; }
+    .prompt-text-wrap { margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+    .prompt-text-wrap .textarea-input { min-height: 76px; font-size: 12.5px; }
+    .field-note { font-size: 11px; color: var(--text-muted); line-height: 1.45; margin: 0; }
+
+    .text-fallback-details, .ai-box {
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--surface-subtle);
+    }
+    .text-fallback-details summary, .ai-box summary {
+      cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; justify-content: space-between; list-style: none;
+    }
+    .text-fallback-details summary::-webkit-details-marker, .ai-box summary::-webkit-details-marker { display: none; }
+    .text-fallback-details .textarea-input { margin-top: 8px; background: var(--surface); min-height: 86px; }
+    .text-students-section { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+    .text-students-list { display: flex; flex-direction: column; gap: 7px; }
+    .text-student-card { border: 1px solid var(--border); background: var(--surface-subtle); border-radius: 8px; padding: 8px 9px; display: flex; flex-direction: column; gap: 6px; }
+    .text-student-head { display: flex; align-items: center; gap: 6px; }
+    .text-student-head .text-input { background: var(--surface); padding: 5px 8px; font-size: 12px; font-weight: 600; flex: 1; min-width: 0; }
+    .text-student-status { font-size: 10.5px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .text-student-status.is-done { color: var(--accent-text); }
+    .text-student-card .textarea-input { background: var(--surface); min-height: 66px; font-size: 12px; padding: 6px 8px; }
+    .btn-add-student { border: 1px dashed var(--border-strong); background: var(--surface); color: var(--accent-text); border-radius: 8px; padding: 7px 9px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+    .btn-add-student:hover { background: var(--accent-tint); border-color: var(--accent); }
+    .form-actions-row { display: flex; gap: 7px; align-items: stretch; }
+    .form-actions-row .btn-primary { flex: 1; }
+    .btn-reset { border: 1px solid var(--border); background: var(--surface-subtle); color: var(--text-secondary); border-radius: 9px; padding: 0 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-reset:hover { background: var(--surface-hover); color: var(--text); }
+    .student-bar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-reset-pill { border: 1px solid var(--border); background: var(--surface-subtle); color: var(--text-secondary); border-radius: 7px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-reset-pill:hover { background: var(--surface-hover); color: var(--text); }
+    .ai-box-body { display: flex; flex-direction: column; gap: 7px; padding-top: 8px; margin-top: 7px; border-top: 1px solid var(--border); }
+    .ai-status-dot { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .ai-status-dot.is-ready { color: var(--accent-text); }
+    .key-row { display: flex; gap: 6px; align-items: center; }
+    .key-row .text-input { background: var(--surface); flex: 1; min-width: 0; }
+    .ai-box .select-input { background: var(--surface); }
+    .ai-link { color: var(--accent-text); font-weight: 600; text-decoration: none; }
+    .ai-link:hover { text-decoration: underline; }
 
     .btn-primary {
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      background: var(--accent);
-      color: #FFFFFF;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px 16px;
-      cursor: pointer;
-      transition: background-color 0.15s ease, transform 0.08s ease;
+      width: 100%; border: none; border-radius: 9px; background: var(--accent); color: #FFFFFF;
+      font-size: 13.5px; font-weight: 600; padding: 11px 16px; cursor: pointer;
+      transition: background-color 0.15s ease;
     }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent-hover);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(1px);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.65;
-      cursor: wait;
-    }
-
-    .ai-box {
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      border-radius: 10px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ai-box summary {
-      cursor: pointer;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      list-style: none;
-    }
-
-    .ai-box summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .ai-status-dot {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    .ai-status-dot.is-ready {
-      color: var(--accent-text);
-    }
-
-    .ai-box-body {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-top: 6px;
-      border-top: 1px solid var(--border);
-    }
-
-    .key-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .key-row .text-input {
-      background: var(--surface);
-      flex: 1;
-      min-width: 0;
-    }
-
-    .select-input {
-      width: 100%;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 12.5px;
-      color: var(--text);
-    }
-
-    .select-input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .ai-link {
-      color: var(--accent-text);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .ai-link:hover {
-      text-decoration: underline;
-    }
-
-    .text-fallback-details {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      background: var(--surface-subtle);
-    }
-
-    .text-fallback-details summary {
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .text-fallback-details .textarea-input {
-      margin-top: 8px;
-      background: var(--surface);
-      min-height: 92px;
-    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.65; cursor: wait; }
 
     .grade-feedback {
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 11px;
-      line-height: 1.45;
-      display: none;
+      font-size: 12px; color: var(--text-secondary); background: var(--surface-subtle);
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; line-height: 1.45; display: none;
     }
+    .grade-feedback.is-visible { display: block; }
+    .grade-feedback.is-error { color: var(--err-grammar); background: var(--err-grammar-bg); border-color: var(--err-grammar); }
 
-    .grade-feedback.is-visible {
-      display: block;
-    }
+    /* Right Column */
+    .main-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 
-    .grade-feedback.is-error {
-      color: var(--err-grammar);
-      background: var(--err-grammar-bg);
-      border-color: var(--err-grammar);
-    }
-
-    /* Right column */
-    .main-col {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      min-width: 0;
-    }
-
-    /* Student tabs bar */
     .student-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; box-shadow: var(--shadow-card);
     }
-
-    .student-tabs {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    .student-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: var(--surface-subtle); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
     .student-tab {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-secondary);
-      border-radius: 999px;
-      padding: 7px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      border: none; background: transparent; color: var(--text-secondary);
+      border-radius: 7px; padding: 6px 13px; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px; transition: all 0.15s ease;
     }
+    .student-tab:hover { color: var(--text); }
+    .student-tab.is-active { background: var(--tab-active-bg); color: var(--tab-active-text); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .tab-pill-sub { font-size: 11.5px; font-weight: 500; opacity: 0.8; }
+    .student-meta { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
 
-    .student-tab:hover {
-      border-color: var(--border-strong);
-      color: var(--text);
-    }
+    .empty-state { text-align: center; padding: 48px 24px; }
+    .empty-state h2 { margin: 0 0 8px; font-size: 17px; }
+    .empty-state p { margin: 0 auto; max-width: 480px; color: var(--text-secondary); }
+    .is-hidden { display: none !important; }
 
-    .student-tab.is-active {
-      background: var(--tab-active-bg);
-      color: var(--tab-active-text);
-      border-color: var(--tab-active-bg);
-    }
-
-    .tab-pill-sub {
-      font-size: 11.5px;
-      font-weight: 500;
-      opacity: 0.78;
-    }
-
-    .student-meta {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    /* Empty state card for Han */
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
-    }
-
-    .empty-state h2 {
-      margin: 0 0 8px;
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .empty-state p {
-      margin: 0 auto;
-      max-width: 480px;
-      color: var(--text-secondary);
-      font-size: 13.5px;
-    }
-
-    .is-hidden {
-      display: none !important;
-    }
-
-    /* Reading area: Essay + Sticky Detail Panel */
-    .reading-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .essay-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
+    .reading-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+    .essay-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
     .word-count {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      padding: 2px 9px;
-      border-radius: 999px;
+      font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--surface-subtle);
+      border: 1px solid var(--border); padding: 2px 9px; border-radius: 6px;
     }
 
-    /* Filter chips */
-    .filter-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 12px;
-    }
-
+    .filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
     .filter-chip {
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      color: var(--text-secondary);
-      border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+      border: 1px solid var(--border); background: var(--surface-subtle); color: var(--text-secondary);
+      border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease;
     }
-
-    .filter-chip:hover {
-      border-color: var(--border-strong);
-      color: var(--text);
-    }
-
-    .filter-chip.is-active {
-      background: var(--text);
-      color: var(--surface);
-      border-color: var(--text);
-    }
-
-    .chip-count {
-      opacity: 0.78;
-      font-weight: 500;
-    }
-
+    .filter-chip:hover { border-color: var(--border-strong); color: var(--text); }
+    .filter-chip.is-active { background: var(--text); color: var(--surface); border-color: var(--text); }
+    .chip-count { opacity: 0.78; font-weight: 500; }
     .chip-sample {
-      display: inline-block;
-      padding: 0 4px;
-      border-radius: 4px;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 12.5px;
-      line-height: 1.35;
-      color: var(--text);
-      text-decoration-line: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 2px;
-      text-decoration-skip-ink: none;
+      display: inline-block; padding: 0 4px; border-radius: 4px;
+      font-family: "Source Serif 4", Georgia, serif; font-size: 12.5px; line-height: 1.35;
+      color: var(--text); text-decoration-line: underline; text-decoration-thickness: 2px;
+      text-underline-offset: 2px; text-decoration-skip-ink: none;
     }
+    .filter-chip.is-active .chip-sample { background-color: rgba(255, 255, 255, 0.92); color: #0F172A; }
+    .chip-sample[data-group="Grammar"] { background-color: var(--err-grammar-bg); text-decoration-color: var(--err-grammar); text-decoration-style: solid; }
+    .chip-sample[data-group="Vocabulary"] { background-color: var(--err-vocab-bg); text-decoration-color: var(--err-vocab); text-decoration-style: dashed; }
+    .chip-sample[data-group="Logic"] { background-color: var(--err-logic-bg); text-decoration-color: var(--err-logic); text-decoration-style: dotted; }
+    .chip-sample[data-group="Spelling & Punctuation"] { background-color: var(--err-spelling-bg); text-decoration-color: var(--err-spelling); text-decoration-style: wavy; }
 
-    .filter-chip.is-active .chip-sample {
-      background-color: rgba(255, 255, 255, 0.92);
-      color: #0F172A;
-    }
-
-    .chip-sample[data-group="Grammar"] {
-      background-color: var(--err-grammar-bg);
-      text-decoration-color: var(--err-grammar);
-      text-decoration-style: solid;
-    }
-
-    .chip-sample[data-group="Vocabulary"] {
-      background-color: var(--err-vocab-bg);
-      text-decoration-color: var(--err-vocab);
-      text-decoration-style: dashed;
-    }
-
-    .chip-sample[data-group="Logic"] {
-      background-color: var(--err-logic-bg);
-      text-decoration-color: var(--err-logic);
-      text-decoration-style: dotted;
-    }
-
-    .chip-sample[data-group="Spelling & Punctuation"] {
-      background-color: var(--err-spelling-bg);
-      text-decoration-color: var(--err-spelling);
-      text-decoration-style: wavy;
-    }
-
-    /* Ratio bar */
-    .ratio-bar {
-      height: 8px;
-      border-radius: 999px;
-      overflow: hidden;
-      display: flex;
-      gap: 2px;
-      background: var(--surface-subtle);
-      margin-bottom: 18px;
-    }
-
-    .ratio-seg {
-      height: 100%;
-      transition: opacity 0.15s ease;
-    }
-
-    .ratio-seg.is-dimmed {
-      opacity: 0.22;
-    }
-
+    .ratio-bar { height: 7px; border-radius: 999px; overflow: hidden; display: flex; gap: 2px; background: var(--surface-subtle); margin-bottom: 18px; }
+    .ratio-seg { height: 100%; transition: opacity 0.15s ease; }
+    .ratio-seg.is-dimmed { opacity: 0.22; }
     .ratio-seg[data-group="Grammar"] { background: var(--err-grammar); }
     .ratio-seg[data-group="Vocabulary"] { background: var(--err-vocab); }
     .ratio-seg[data-group="Logic"] { background: var(--err-logic); }
     .ratio-seg[data-group="Spelling & Punctuation"] { background: var(--err-spelling); }
 
-    /* Essay prose */
-    .essay-body {
-      font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
-      font-size: 18px;
-      line-height: 2.2;
-      color: var(--text);
-      margin: 0;
-      word-wrap: break-word;
-    }
-
+    .essay-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.2; margin: 0; word-wrap: break-word; }
     .err-mark {
-      cursor: pointer;
-      border-radius: 5px;
-      padding: 1px 3px;
-      margin: 0 1px;
-      text-decoration-line: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
-      text-decoration-skip-ink: none;
-      transition: background-color 0.15s ease, box-shadow 0.15s ease;
-      -webkit-box-decoration-break: clone;
-      box-decoration-break: clone;
+      cursor: pointer; border-radius: 5px; padding: 1px 3px; margin: 0 1px;
+      text-decoration-line: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
+      text-decoration-skip-ink: none; transition: all 0.15s ease; -webkit-box-decoration-break: clone; box-decoration-break: clone;
     }
+    .err-mark[data-group="Grammar"] { background-color: var(--err-grammar-bg); text-decoration-color: var(--err-grammar); text-decoration-style: solid; }
+    .err-mark[data-group="Vocabulary"] { background-color: var(--err-vocab-bg); text-decoration-color: var(--err-vocab); text-decoration-style: dashed; }
+    .err-mark[data-group="Logic"] { background-color: var(--err-logic-bg); text-decoration-color: var(--err-logic); text-decoration-style: dotted; }
+    .err-mark[data-group="Spelling & Punctuation"] { background-color: var(--err-spelling-bg); text-decoration-color: var(--err-spelling); text-decoration-style: wavy; }
+    .err-mark.is-selected[data-group="Grammar"] { background-color: var(--err-grammar-bg-active); box-shadow: 0 0 0 1.5px var(--err-grammar); }
+    .err-mark.is-selected[data-group="Vocabulary"] { background-color: var(--err-vocab-bg-active); box-shadow: 0 0 0 1.5px var(--err-vocab); }
+    .err-mark.is-selected[data-group="Logic"] { background-color: var(--err-logic-bg-active); box-shadow: 0 0 0 1.5px var(--err-logic); }
+    .err-mark.is-selected[data-group="Spelling & Punctuation"] { background-color: var(--err-spelling-bg-active); box-shadow: 0 0 0 1.5px var(--err-spelling); }
 
-    .err-mark[data-group="Grammar"] {
-      background-color: var(--err-grammar-bg);
-      text-decoration-color: var(--err-grammar);
-      text-decoration-style: solid;
-    }
-
-    .err-mark[data-group="Vocabulary"] {
-      background-color: var(--err-vocab-bg);
-      text-decoration-color: var(--err-vocab);
-      text-decoration-style: dashed;
-    }
-
-    .err-mark[data-group="Logic"] {
-      background-color: var(--err-logic-bg);
-      text-decoration-color: var(--err-logic);
-      text-decoration-style: dotted;
-    }
-
-    .err-mark[data-group="Spelling & Punctuation"] {
-      background-color: var(--err-spelling-bg);
-      text-decoration-color: var(--err-spelling);
-      text-decoration-style: wavy;
-    }
-
-    .err-mark.is-selected[data-group="Grammar"] {
-      background-color: var(--err-grammar-bg-active);
-      box-shadow: 0 0 0 1.5px var(--err-grammar);
-    }
-
-    .err-mark.is-selected[data-group="Vocabulary"] {
-      background-color: var(--err-vocab-bg-active);
-      box-shadow: 0 0 0 1.5px var(--err-vocab);
-    }
-
-    .err-mark.is-selected[data-group="Logic"] {
-      background-color: var(--err-logic-bg-active);
-      box-shadow: 0 0 0 1.5px var(--err-logic);
-    }
-
-    .err-mark.is-selected[data-group="Spelling & Punctuation"] {
-      background-color: var(--err-spelling-bg-active);
-      box-shadow: 0 0 0 1.5px var(--err-spelling);
-    }
-
-    .err-sup {
-      font-family: "Be Vietnam Pro", sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      vertical-align: super;
-      line-height: 0;
-      margin-left: 2px;
-      user-select: none;
-    }
-
+    .err-sup { font-family: "Be Vietnam Pro", sans-serif; font-size: 11px; font-weight: 700; vertical-align: super; line-height: 0; margin-left: 2px; user-select: none; }
     .err-sup[data-group="Grammar"] { color: var(--err-grammar); }
     .err-sup[data-group="Vocabulary"] { color: var(--err-vocab); }
     .err-sup[data-group="Logic"] { color: var(--err-logic); }
     .err-sup[data-group="Spelling & Punctuation"] { color: var(--err-spelling); }
 
-    /* Detail Panel (Sticky on desktop) */
-    .detail-panel {
-      position: sticky;
-      top: 72px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .detail-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .detail-group-title {
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      min-width: 0;
-    }
-
-    .group-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      flex-shrink: 0;
-    }
-
+    .detail-panel { position: sticky; top: 68px; display: flex; flex-direction: column; gap: 12px; }
+    .detail-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .detail-group-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .group-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
     .group-dot[data-group="Grammar"] { background: var(--err-grammar); }
     .group-dot[data-group="Vocabulary"] { background: var(--err-vocab); }
     .group-dot[data-group="Logic"] { background: var(--err-logic); }
     .group-dot[data-group="Spelling & Punctuation"] { background: var(--err-spelling); }
+    .detail-counter { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 
-    .detail-counter {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .diff-box {
-      border-radius: 10px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .diff-label {
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .diff-wrong-text {
-      font-size: 14px;
-      text-decoration: line-through;
-      font-weight: 500;
-      word-break: break-word;
-    }
-
+    .diff-split { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .diff-box { border-radius: 8px; padding: 9px 11px; display: flex; flex-direction: column; gap: 3px; }
+    .diff-label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+    .diff-wrong-text { font-size: 13.5px; text-decoration: line-through; font-weight: 500; word-break: break-word; }
     .diff-box.is-wrong[data-group="Grammar"] { background: var(--err-grammar-bg); }
     .diff-box.is-wrong[data-group="Grammar"] .diff-wrong-text { color: var(--err-grammar); }
     .diff-box.is-wrong[data-group="Vocabulary"] { background: var(--err-vocab-bg); }
@@ -1090,444 +388,116 @@
     .diff-box.is-wrong[data-group="Logic"] .diff-wrong-text { color: var(--err-logic); }
     .diff-box.is-wrong[data-group="Spelling & Punctuation"] { background: var(--err-spelling-bg); }
     .diff-box.is-wrong[data-group="Spelling & Punctuation"] .diff-wrong-text { color: var(--err-spelling); }
+    .diff-box.is-fix { background: var(--accent-tint); border: 1px solid var(--accent-border); }
+    .diff-fix-text { font-size: 14px; font-weight: 700; color: var(--accent-text); word-break: break-word; }
 
-    .diff-box.is-fix {
-      background: var(--accent-tint);
-      border: 1px solid var(--accent-border);
-    }
-
-    .diff-fix-text {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--accent-text);
-      word-break: break-word;
-    }
-
-    .detail-section {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .detail-section-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .detail-why {
-      margin: 0;
-      font-size: 13.5px;
-      line-height: 1.55;
-      color: var(--text);
-    }
-
+    .detail-section { display: flex; flex-direction: column; gap: 4px; }
+    .detail-section-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+    .detail-why { margin: 0; font-size: 13px; line-height: 1.55; }
     .detail-example {
-      margin: 0;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 15.5px;
-      line-height: 1.55;
-      color: var(--text);
-      background: var(--surface-subtle);
-      border-left: 3px solid var(--border-strong);
-      padding: 8px 11px;
-      border-radius: 0 8px 8px 0;
+      margin: 0; font-family: "Source Serif 4", Georgia, serif; font-size: 15px; line-height: 1.55;
+      background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px;
     }
-
-    .detail-footer {
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .detail-level-note {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    .nav-arrows {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
+    .detail-footer { padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .detail-level-note { font-size: 11.5px; color: var(--text-muted); }
+    .nav-arrows { display: flex; align-items: center; gap: 5px; }
     .icon-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
+      width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--surface-subtle); color: var(--text); cursor: pointer; display: grid; place-items: center;
     }
+    .icon-btn:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-strong); }
+    .icon-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
-    .icon-btn:hover:not(:disabled) {
-      background: var(--surface-subtle);
-      border-color: var(--border-strong);
-    }
+    .prompt-summary { margin: 0 0 12px; padding: 10px 12px; background: var(--surface-subtle); border-radius: 8px; border: 1px solid var(--border); font-size: 13px; }
+    .criteria-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+    .criteria-item { border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; background: var(--surface); display: flex; flex-direction: column; gap: 5px; }
+    .criteria-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .criteria-title { font-size: 13px; font-weight: 600; }
+    .status-pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+    .status-pill.is-yes { background: var(--badge-yes-bg); color: var(--badge-yes-text); }
+    .status-pill.is-partial { background: var(--badge-partial-bg); color: var(--badge-partial-text); }
+    .status-pill.is-no { background: var(--badge-no-bg); color: var(--badge-no-text); }
+    .criteria-desc { margin: 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.48; }
 
-    .icon-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    .feedback-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .feedback-col-title { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+    .feedback-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.5; }
 
-    /* Prompt comparison card */
-    .prompt-summary {
-      margin: 0 0 14px;
-      padding: 10px 12px;
-      background: var(--surface-subtle);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 13.5px;
-      color: var(--text);
-    }
-
-    .criteria-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .criteria-item {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .criteria-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .criteria-title {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .status-pill {
-      font-size: 11.5px;
-      font-weight: 600;
-      padding: 2px 9px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-
-    .status-pill.is-yes {
-      background: var(--badge-yes-bg);
-      color: var(--badge-yes-text);
-    }
-
-    .status-pill.is-partial {
-      background: var(--badge-partial-bg);
-      color: var(--badge-partial-text);
-    }
-
-    .status-pill.is-no {
-      background: var(--badge-no-bg);
-      color: var(--badge-no-text);
-    }
-
-    .criteria-desc {
-      margin: 0;
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    /* General feedback card */
-    .feedback-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .feedback-col-title {
-      margin: 0 0 8px;
-      font-size: 11.5px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .feedback-list {
-      margin: 0;
-      padding-left: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 13.5px;
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    /* Summary Table */
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-
-    .error-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 680px;
-      text-align: left;
-      font-size: 13px;
-    }
-
+    .table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 9px; }
+    .error-table { width: 100%; border-collapse: collapse; min-width: 680px; text-align: left; font-size: 13px; }
     .error-table th {
-      background: var(--surface-subtle);
-      color: var(--text-muted);
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+      background: var(--surface-subtle); color: var(--text-muted); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
     }
-
-    .error-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-      line-height: 1.45;
-    }
-
-    .error-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .error-table tbody tr {
-      cursor: pointer;
-      transition: background-color 0.12s ease;
-    }
-
-    .error-table tbody tr:hover {
-      background: var(--surface-hover);
-    }
-
+    .error-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.45; }
+    .error-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-subtle) 55%, transparent); }
+    .error-table tbody tr:last-child td { border-bottom: none; }
+    .error-table tbody tr { cursor: pointer; }
+    .error-table tbody tr:hover { background: var(--surface-hover); }
     .error-table tbody tr.is-selected[data-group="Grammar"] { background: var(--err-grammar-bg); }
     .error-table tbody tr.is-selected[data-group="Vocabulary"] { background: var(--err-vocab-bg); }
     .error-table tbody tr.is-selected[data-group="Logic"] { background: var(--err-logic-bg); }
     .error-table tbody tr.is-selected[data-group="Spelling & Punctuation"] { background: var(--err-spelling-bg); }
 
     .num-pill-btn {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      border: none;
-      color: #FFFFFF;
-      font-size: 12px;
-      font-weight: 700;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
+      width: 24px; height: 24px; border-radius: 6px; border: none; color: #FFFFFF;
+      font-size: 11.5px; font-weight: 700; display: grid; place-items: center; cursor: pointer;
     }
-
     .num-pill-btn[data-group="Grammar"] { background: var(--err-grammar); }
     .num-pill-btn[data-group="Vocabulary"] { background: var(--err-vocab); }
     .num-pill-btn[data-group="Logic"] { background: var(--err-logic); }
     .num-pill-btn[data-group="Spelling & Punctuation"] { background: var(--err-spelling); }
-
-    @media (prefers-color-scheme: dark) {
-      .num-pill-btn {
-        color: #0F172A;
-      }
-    }
-
-    .table-wrong {
-      text-decoration: line-through;
-      font-weight: 500;
-    }
-
+    @media (prefers-color-scheme: dark) { .num-pill-btn { color: #0B1017; } }
+    .table-wrong { text-decoration: line-through; font-weight: 500; }
     .table-wrong[data-group="Grammar"] { color: var(--err-grammar); }
     .table-wrong[data-group="Vocabulary"] { color: var(--err-vocab); }
     .table-wrong[data-group="Logic"] { color: var(--err-logic); }
     .table-wrong[data-group="Spelling & Punctuation"] { color: var(--err-spelling); }
+    .table-fix { color: var(--accent-text); font-weight: 600; }
+    .table-group-cell { white-space: nowrap; font-weight: 500; color: var(--text-secondary); }
 
-    .table-fix {
-      color: var(--accent-text);
-      font-weight: 600;
-    }
-
-    .table-group-cell {
-      white-space: nowrap;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    /* Rewrite card */
-    .rewrite-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .switch-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      user-select: none;
-    }
-
+    .rewrite-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .switch-label { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); cursor: pointer; user-select: none; }
     .switch-input {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 36px;
-      height: 20px;
-      border-radius: 999px;
-      background: var(--border-strong);
-      position: relative;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-      flex-shrink: 0;
+      appearance: none; -webkit-appearance: none; width: 34px; height: 19px; border-radius: 999px;
+      background: var(--border-strong); position: relative; cursor: pointer; transition: background-color 0.15s ease;
     }
-
     .switch-input::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      border-radius: 999px;
-      background: #FFFFFF;
-      transition: transform 0.15s ease;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px;
+      border-radius: 999px; background: #FFFFFF; transition: transform 0.15s ease;
     }
-
-    .switch-input:checked {
-      background: var(--accent);
-    }
-
-    .switch-input:checked::after {
-      transform: translateX(16px);
-    }
-
+    .switch-input:checked { background: var(--accent); }
+    .switch-input:checked::after { transform: translateX(15px); }
     .btn-secondary {
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      color: var(--text);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
+      border: 1px solid var(--border); background: var(--surface-subtle); color: var(--text);
+      border-radius: 7px; padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
+    .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+    .btn-secondary.is-copied { background: var(--accent-tint); border-color: var(--accent-border); color: var(--accent-text); }
 
-    .btn-secondary:hover {
-      background: var(--surface-hover);
-      border-color: var(--border-strong);
-    }
+    .rewrite-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.0; margin: 0 0 10px; word-wrap: break-word; }
+    .rewrite-change { border-radius: 5px; padding: 1px 4px; }
+    .rewrite-body.show-highlights .rewrite-change { background-color: var(--accent-tint-strong); }
 
-    .btn-secondary.is-copied {
-      background: var(--accent-tint);
-      border-color: var(--accent-border);
-      color: var(--accent-text);
-    }
-
-    .rewrite-body {
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 18px;
-      line-height: 2.0;
-      margin: 0 0 12px;
-      color: var(--text);
-      word-wrap: break-word;
-    }
-
-    .rewrite-change {
-      border-radius: 5px;
-      padding: 1px 4px;
-      transition: background-color 0.15s ease;
-    }
-
-    .rewrite-body.show-highlights .rewrite-change {
-      background-color: var(--accent-tint-strong);
-      color: var(--text);
-    }
-
-    /* Responsive adjustments */
     @media (max-width: 1099px) {
-      .reading-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
+      .reading-grid { grid-template-columns: minmax(0, 1fr); }
       .detail-panel {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        top: auto;
-        z-index: 60;
-        max-height: 46vh;
-        max-height: 46dvh;
-        overflow-y: auto;
-        border-radius: 16px 16px 0 0;
-        border-bottom: none;
-        box-shadow: var(--shadow-sheet);
-        padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+        position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60;
+        max-height: 46vh; max-height: 46dvh; overflow-y: auto;
+        border-radius: 14px 14px 0 0; border-bottom: none; box-shadow: var(--shadow-sheet);
+        padding: 15px 18px calc(15px + env(safe-area-inset-bottom));
       }
-
-      body.has-bottom-sheet {
-        padding-bottom: 48vh;
-      }
+      body.has-bottom-sheet { padding-bottom: 48vh; }
     }
-
     @media (max-width: 900px) {
-      .workspace {
-        grid-template-columns: minmax(0, 1fr);
-        padding: 14px 14px 28px;
-        gap: 16px;
-      }
-
-      .topbar-inner {
-        padding: 10px 14px;
-      }
-
-      .criteria-grid,
-      .feedback-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
+      .workspace { grid-template-columns: minmax(0, 1fr); padding: 14px; gap: 14px; }
+      .topbar-inner { padding: 10px 14px; }
+      .brand-tag { display: none; }
+      .criteria-grid, .feedback-grid { grid-template-columns: minmax(0, 1fr); }
     }
-
     @media (max-width: 480px) {
-      .preview-badge {
-        font-size: 11px;
-        padding: 3px 8px;
-      }
-
-      .essay-body,
-      .rewrite-body {
-        font-size: 17px;
-      }
+      .preview-badge { font-size: 11px; padding: 3px 8px; }
+      .essay-body, .rewrite-body { font-size: 17px; }
     }
   </style>
 </head>
@@ -1536,9 +506,7 @@
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-logo" aria-hidden="true">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </span>
         <span>Chấm Writing</span>
       </div>
@@ -1550,30 +518,18 @@
   </header>
 
   <main class="workspace">
-    <!-- Left Column: Form Card -->
     <aside class="card form-card" aria-label="Thông tin bài mới">
-      <div class="card-title-row" style="margin-bottom: 2px;">
+      <div class="card-title-row" style="margin-bottom: 0;">
         <h1 class="card-title">Bài mới</h1>
       </div>
 
       <div class="field-group">
-        <label class="field-label" for="student-name-input">
-          Tên học sinh
-          <span class="field-sub">không bắt buộc</span>
-        </label>
-        <input
-          id="student-name-input"
-          class="text-input"
-          type="text"
-          placeholder="Để trống nếu ảnh đã có cột tên"
-        />
+        <label class="field-label" for="student-name-input"><span class="step-num">01</span> Tên học sinh <span class="field-sub">không bắt buộc</span></label>
+        <input id="student-name-input" class="text-input" type="text" placeholder="Để trống nếu ảnh đã có cột tên" />
       </div>
 
       <div class="field-group">
-        <span class="field-label" id="level-label">
-          Level
-          <span class="field-sub">theo giáo trình Prepare</span>
-        </span>
+        <span class="field-label" id="level-label"><span class="step-num">02</span> Level <span class="field-sub">theo giáo trình Prepare</span></span>
         <div class="level-grid" role="radiogroup" aria-labelledby="level-label">
           <button type="button" class="level-btn" data-level="A1" role="radio" aria-checked="false">
             <span class="level-btn-top"><span class="level-dot" aria-hidden="true"></span>Beginners</span>
@@ -1592,70 +548,48 @@
             <span class="level-sub">B2 · Prepare 6</span>
           </button>
         </div>
-        <div class="level-desc" id="level-desc" aria-live="polite">
-          Giải thích rõ quy tắc, ví dụ câu B1, chỉ ra lỗi lặp lại nhiều lần.
-        </div>
+        <div class="level-desc" id="level-desc" aria-live="polite"></div>
       </div>
 
       <div class="field-group">
-        <span class="field-label">
-          Ảnh đề bài
-          <span class="field-sub">gồm cả khung gợi ý nếu có</span>
-        </span>
+        <span class="field-label"><span class="step-num">03</span> Đề bài <span class="field-sub">ảnh hoặc dán chữ đề bài</span></span>
         <div class="file-list" id="prompt-file-list"></div>
-        <div
-          class="dropzone"
-          id="prompt-dropzone"
-          role="button"
-          tabindex="0"
-          aria-label="Thêm ảnh đề hoặc kéo thả vào đây"
-        >
-          <span>Thêm ảnh đề hoặc kéo thả vào đây</span>
+        <div class="dropzone" id="prompt-dropzone" tabindex="0" aria-label="Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc chữ đề bài">
+          <span class="dropzone-main">Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc chữ đề bài</span>
+          <span class="dropzone-actions">
+            <button type="button" class="dropzone-browse-btn" id="prompt-browse-btn">Chọn ảnh từ máy</button>
+            <span class="dropzone-sub" data-default-hint="hoặc kéo thả ảnh vào đây">hoặc kéo thả ảnh vào đây</span>
+          </span>
         </div>
         <input type="file" id="prompt-file-input" accept="image/*" multiple hidden />
+        <div class="prompt-text-wrap is-hidden" id="prompt-text-wrap">
+          <textarea id="prompt-text-input" class="textarea-input" rows="3" placeholder="Dán hoặc nhập nội dung đề bài bằng chữ vào đây..."></textarea>
+        </div>
+        <button type="button" class="btn-add-student" id="toggle-prompt-text-btn">+ Nhập / dán chữ đề bài</button>
         <p class="field-note">Ảnh có nhiều đề thì hệ thống tự chọn đề khớp với bài của từng bạn.</p>
       </div>
 
       <div class="field-group">
-        <label class="field-label" for="extra-notes-input">
-          Ghi chú thêm
-          <span class="field-sub">không bắt buộc</span>
-        </label>
-        <textarea
-          id="extra-notes-input"
-          class="textarea-input"
-          rows="2"
-          placeholder="VD: Viết khoảng 150 từ"
-        ></textarea>
+        <label class="field-label" for="extra-notes-input"><span class="step-num">04</span> Ghi chú thêm <span class="field-sub">không bắt buộc</span></label>
+        <textarea id="extra-notes-input" class="textarea-input" rows="2" placeholder="VD: Viết khoảng 150 từ"></textarea>
       </div>
 
       <div class="field-group">
-        <span class="field-label">
-          Ảnh bài làm
-          <span class="field-sub">nhiều ảnh được</span>
-        </span>
+        <span class="field-label"><span class="step-num">05</span> Bài làm của học sinh <span class="field-sub">nhiều ảnh hoặc nhiều bài cùng lúc</span></span>
         <div class="file-list" id="work-file-list"></div>
-        <div
-          class="dropzone"
-          id="work-dropzone"
-          role="button"
-          tabindex="0"
-          aria-label="Thêm ảnh bài làm, kéo thả hoặc dán ảnh bằng Ctrl+V"
-        >
-          <span>Thêm ảnh hoặc kéo thả vào đây</span>
-          <span class="dropzone-sub">Dán ảnh chụp màn hình bằng Ctrl+V cũng được</span>
+        <div class="dropzone" id="work-dropzone" tabindex="0" aria-label="Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm">
+          <span class="dropzone-main">Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm</span>
+          <span class="dropzone-actions">
+            <button type="button" class="dropzone-browse-btn" id="work-browse-btn">Chọn ảnh từ máy</button>
+            <span class="dropzone-sub" data-default-hint="hoặc kéo thả nhiều ảnh vào đây">hoặc kéo thả nhiều ảnh vào đây</span>
+          </span>
         </div>
         <input type="file" id="work-file-input" accept="image/*" multiple hidden />
-        <details class="text-fallback-details">
-          <summary>Hoặc dán trực tiếp văn bản bài làm</summary>
-          <textarea
-            id="essay-text-input"
-            class="textarea-input"
-            rows="4"
-            placeholder="Dán bài viết tiếng Anh vào đây nếu chưa có ảnh bài làm..."
-          ></textarea>
-        </details>
-        <p class="field-note">Mỗi ảnh có thể chứa nhiều bạn. Hệ thống tách bài theo tên ở cột bên trái.</p>
+        <div class="text-students-section">
+          <div class="text-students-list" id="text-students-list"></div>
+          <button type="button" class="btn-add-student" id="add-text-student-btn">+ Thêm bài viết học sinh (nhập / dán chữ)</button>
+        </div>
+        <p class="field-note">Có thể thêm nhiều ảnh và nhiều bài viết cùng lúc. Mỗi học sinh sẽ tự mở thành 1 tab riêng.</p>
       </div>
 
       <details class="ai-box" id="ai-settings-box" open>
@@ -1665,14 +599,7 @@
         </summary>
         <div class="ai-box-body">
           <div class="key-row">
-            <input
-              id="api-key-input"
-              class="text-input"
-              type="password"
-              autocomplete="off"
-              placeholder="Dán Gemini API Key (AIza...)"
-              aria-label="Gemini API Key"
-            />
+            <input id="api-key-input" class="text-input" type="password" autocomplete="off" placeholder="Dán Gemini API Key (AIza...)" aria-label="Gemini API Key" />
             <button type="button" class="btn-secondary" id="toggle-key-btn">Hiện</button>
           </div>
           <select id="model-select" class="select-input" aria-label="Chọn model Gemini">
@@ -1682,52 +609,41 @@
             <option value="gemini-2.5-flash">gemini-2.5-flash</option>
             <option value="custom">Nhập tên model khác...</option>
           </select>
-          <input
-            id="custom-model-input"
-            class="text-input is-hidden"
-            type="text"
-            placeholder="VD: gemini-3.8-flash"
-            aria-label="Tên model Gemini tùy chỉnh"
-          />
-          <p class="field-note">
-            Key chỉ lưu trên trình duyệt của bạn. Lấy key miễn phí tại
-            <a class="ai-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
-          </p>
+          <input id="custom-model-input" class="text-input is-hidden" type="text" placeholder="VD: gemini-3.8-flash" aria-label="Tên model Gemini tùy chỉnh" />
+          <p class="field-note">Key chỉ lưu trên trình duyệt của bạn. Lấy key miễn phí tại <a class="ai-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.</p>
         </div>
       </details>
 
-      <button type="button" class="btn-primary" id="grade-btn">Chấm bài</button>
+      <div class="form-actions-row">
+        <button type="button" class="btn-primary" id="grade-btn">Chấm bài</button>
+        <button type="button" class="btn-reset" id="form-reset-btn">Reset lớp</button>
+      </div>
       <div class="grade-feedback" id="grade-feedback" role="status" aria-live="polite"></div>
     </aside>
 
-    <!-- Right Column -->
     <section class="main-col" aria-label="Kết quả chấm bài">
-      <!-- 1. Student Tabs -->
       <div class="student-bar">
         <div class="student-tabs" id="student-tabs" role="tablist" aria-label="Danh sách học sinh"></div>
-        <div class="student-meta" id="student-meta"></div>
+        <div class="student-bar-right">
+          <div class="student-meta" id="student-meta"></div>
+          <button type="button" class="btn-reset-pill" id="reset-class-btn">Reset lớp mới</button>
+        </div>
       </div>
 
-      <!-- Empty State -->
       <section class="card empty-state is-hidden" id="empty-state-panel" role="tabpanel">
         <h2 id="empty-state-title"></h2>
         <p id="empty-state-desc"></p>
       </section>
 
-      <!-- Graded Student Results -->
       <div id="graded-panel" class="main-col" role="tabpanel">
-        <!-- 2. Reading Area -->
         <div class="reading-grid">
           <article class="card">
             <div class="essay-header">
               <h2 class="card-title" id="essay-title">Bài làm của Quân</h2>
               <span class="word-count" id="word-count"></span>
             </div>
-
             <div class="filter-row" id="filter-row" role="group" aria-label="Lọc theo nhóm lỗi"></div>
-
             <div class="ratio-bar" id="ratio-bar" aria-hidden="true"></div>
-
             <p class="essay-body" id="essay-body"></p>
           </article>
 
@@ -1740,14 +656,15 @@
               <span class="detail-counter" id="detail-counter"></span>
             </div>
 
-            <div class="diff-box is-wrong" id="detail-wrong-box" data-group="Grammar">
-              <span class="diff-label">BÀI VIẾT</span>
-              <span class="diff-wrong-text" id="detail-wrong-text"></span>
-            </div>
-
-            <div class="diff-box is-fix">
-              <span class="diff-label">SỬA THÀNH</span>
-              <span class="diff-fix-text" id="detail-fix-text"></span>
+            <div class="diff-split">
+              <div class="diff-box is-wrong" id="detail-wrong-box" data-group="Grammar">
+                <span class="diff-label">BÀI VIẾT</span>
+                <span class="diff-wrong-text" id="detail-wrong-text"></span>
+              </div>
+              <div class="diff-box is-fix">
+                <span class="diff-label">SỬA THÀNH</span>
+                <span class="diff-fix-text" id="detail-fix-text"></span>
+              </div>
             </div>
 
             <div class="detail-section">
@@ -1761,52 +678,39 @@
             </div>
 
             <div class="detail-footer">
-              <span class="detail-level-note" id="detail-level-note">
-                Giải thích ở mức Pre-intermediate (B1)
-              </span>
+              <span class="detail-level-note" id="detail-level-note"></span>
               <div class="nav-arrows">
                 <button type="button" class="icon-btn" id="prev-err-btn" aria-label="Lỗi trước">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
                 <button type="button" class="icon-btn" id="next-err-btn" aria-label="Lỗi sau">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
               </div>
             </div>
           </aside>
         </div>
 
-        <!-- 3. Prompt Comparison Card -->
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Đối chiếu với đề bài</h2>
-            <span class="card-meta" id="prompt-meta">Đọc từ ảnh đề · Đề 3 · Your week</span>
+            <span class="card-meta" id="prompt-meta"></span>
           </div>
-
           <p class="prompt-summary" id="prompt-summary"></p>
-
           <div class="criteria-grid" id="criteria-grid"></div>
-
           <p class="field-note">Đối chiếu với khung gợi ý trong đề bài, không phải điểm số.</p>
         </section>
 
-        <!-- 4. General Feedback Card -->
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Nhận xét chung</h2>
             <span class="card-meta">Không chấm điểm</span>
           </div>
-
           <div class="feedback-grid">
             <div>
               <h3 class="feedback-col-title">LÀM TỐT</h3>
               <ul class="feedback-list" id="strengths-list"></ul>
             </div>
-
             <div>
               <h3 class="feedback-col-title">ƯU TIÊN CẢI THIỆN</h3>
               <ol class="feedback-list" id="improvements-list"></ol>
@@ -1814,30 +718,19 @@
           </div>
         </section>
 
-        <!-- 5. Error Summary Table Card -->
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Bảng tổng hợp lỗi</h2>
             <span class="card-meta">Bấm vào số để xem chi tiết</span>
           </div>
-
           <div class="table-wrap">
             <table class="error-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Loại</th>
-                  <th>Bài viết</th>
-                  <th>Sửa thành</th>
-                  <th>Lý do</th>
-                </tr>
-              </thead>
+              <thead><tr><th>#</th><th>Loại</th><th>Bài viết</th><th>Sửa thành</th><th>Lý do</th></tr></thead>
               <tbody id="error-table-body"></tbody>
             </table>
           </div>
         </section>
 
-        <!-- 6. Complete Rewrite Card -->
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Bản viết lại hoàn chỉnh</h2>
@@ -1849,15 +742,13 @@
               <button type="button" class="btn-secondary" id="copy-rewrite-btn">Chép văn bản</button>
             </div>
           </div>
-
           <p class="rewrite-body show-highlights" id="rewrite-body"></p>
           <p class="field-note">Giữ nguyên ý và giọng văn của học sinh, chỉ sửa lỗi.</p>
         </section>
       </div>
     </section>
   </main>
-
-  <script>
+<script>
     (function () {
       "use strict";
 
@@ -2056,8 +947,9 @@
             id: "quan",
             name: "Quân",
             status: "graded",
+            taskType: "Article",
             topicTitle: "Đề 3 · Your week",
-            promptMeta: "Đọc từ ảnh đề · Đề 3 · Your week",
+            promptMeta: "Đọc từ ảnh đề · Dạng bài: Article · Đề 3 · Your week",
             promptSummary:
               "Viết bài báo về tuần đi học: có thấy mệt không, ngày nào tệ nhất, em làm gì để thư giãn.",
             promptCriteria: [
@@ -2148,7 +1040,8 @@
         isSampleMode: true,
         isGrading: false,
         promptUploads: [],
-        workUploads: []
+        workUploads: [],
+        textStudents: []
       };
 
       /* -----------------------------
@@ -2159,7 +1052,11 @@
 
       const studentNameInput = document.getElementById("student-name-input");
       const extraNotesInput = document.getElementById("extra-notes-input");
-      const essayTextInput = document.getElementById("essay-text-input");
+      const promptTextWrap = document.getElementById("prompt-text-wrap");
+      const promptTextInput = document.getElementById("prompt-text-input");
+      const togglePromptTextBtn = document.getElementById("toggle-prompt-text-btn");
+      const textStudentsListEl = document.getElementById("text-students-list");
+      const addTextStudentBtn = document.getElementById("add-text-student-btn");
 
       const levelBtns = Array.from(document.querySelectorAll(".level-btn"));
       const levelDescEl = document.getElementById("level-desc");
@@ -2172,6 +1069,8 @@
       const customModelInput = document.getElementById("custom-model-input");
 
       const gradeBtn = document.getElementById("grade-btn");
+      const formResetBtn = document.getElementById("form-reset-btn");
+      const resetClassBtn = document.getElementById("reset-class-btn");
       const gradeFeedbackEl = document.getElementById("grade-feedback");
 
       const studentTabsEl = document.getElementById("student-tabs");
@@ -2323,10 +1222,21 @@
           modeBadgeEl.textContent = "Bản xem trước giao diện · dữ liệu mẫu";
           modeBadgeEl.classList.remove("is-ai");
           restoreSampleBtn.classList.add("is-hidden");
+        } else if (state.students.length === 0) {
+          modeBadgeEl.textContent = "Lớp mới · chưa có bài chấm";
+          modeBadgeEl.classList.remove("is-ai");
+          restoreSampleBtn.classList.remove("is-hidden");
         } else {
-          modeBadgeEl.textContent = "Kết quả chấm bằng Gemini AI";
+          modeBadgeEl.textContent = `Lớp hiện tại · ${state.students.length} học sinh`;
           modeBadgeEl.classList.add("is-ai");
           restoreSampleBtn.classList.remove("is-hidden");
+        }
+
+        if (!state.isGrading) {
+          gradeBtn.textContent =
+            !state.isSampleMode && state.students.length > 0
+              ? "Chấm thêm học sinh"
+              : "Chấm bài";
         }
       }
 
@@ -2340,8 +1250,13 @@
         levelDescEl.textContent = info.desc;
 
         const student = getActiveStudent();
-        const topic = student && student.topicTitle ? student.topicTitle : "Bài viết";
-        studentMetaEl.textContent = `${topic} · ${info.label}`;
+        if (!student) {
+          studentMetaEl.textContent = info.label;
+        } else {
+          const topic = student.topicTitle ? student.topicTitle : "Bài viết";
+          const taskPrefix = student.taskType ? `${student.taskType} · ` : "";
+          studentMetaEl.textContent = `${taskPrefix}${topic} · ${info.label}`;
+        }
         detailLevelNoteEl.textContent = `Giải thích ở mức ${info.label}`;
       }
 
@@ -2725,11 +1640,21 @@
         renderLevel();
         const student = getActiveStudent();
 
-        if (!student || student.status !== "graded") {
+        if (!student) {
           gradedPanel.classList.add("is-hidden");
           emptyStatePanel.classList.remove("is-hidden");
-          emptyStateTitleEl.textContent = (student && student.emptyTitle) || "Chưa có dữ liệu bài làm";
-          emptyStateDescEl.textContent = (student && student.emptyDesc) || "";
+          emptyStateTitleEl.textContent = "Sẵn sàng chấm lớp mới";
+          emptyStateDescEl.textContent =
+            "Hãy tải ảnh đề bài (nếu có), thêm nhiều ảnh hoặc nhiều bài viết học sinh ở cột bên trái, rồi bấm Chấm bài. Mỗi học sinh sẽ hiển thị thành một tab riêng.";
+          document.body.classList.remove("has-bottom-sheet");
+          return;
+        }
+
+        if (student.status !== "graded") {
+          gradedPanel.classList.add("is-hidden");
+          emptyStatePanel.classList.remove("is-hidden");
+          emptyStateTitleEl.textContent = student.emptyTitle || "Chưa có dữ liệu bài làm";
+          emptyStateDescEl.textContent = student.emptyDesc || "";
           document.body.classList.remove("has-bottom-sheet");
           return;
         }
@@ -2809,7 +1734,92 @@
         }
       });
 
+      function renderSampleFiles() {
+        promptFileList.textContent = "";
+        workFileList.textContent = "";
+        addSampleFileItem(promptFileList, {
+          name: "de-bai-article.png",
+          statusText: "Đọc xong: 3 đề + khung \"Prepare to write\"",
+          isPromptSample: true
+        });
+        addSampleFileItem(workFileList, {
+          name: "gg-docs-your-week.png",
+          statusText: "Đọc xong 2 bài:",
+          tags: ["Quân", "Hân"],
+          isPromptSample: false
+        });
+      }
+
+      function clearUploadedFiles() {
+        state.promptUploads.forEach((entry) => {
+          if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+          entry.itemEl.remove();
+        });
+        state.workUploads.forEach((entry) => {
+          if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+          entry.itemEl.remove();
+        });
+        state.promptUploads = [];
+        state.workUploads = [];
+        promptFileList.textContent = "";
+        workFileList.textContent = "";
+      }
+
+      function clearTextStudents() {
+        state.textStudents = [];
+        textStudentsListEl.textContent = "";
+      }
+
+      function clearPromptText() {
+        promptTextInput.value = "";
+        promptTextWrap.classList.add("is-hidden");
+        togglePromptTextBtn.textContent = "+ Nhập / dán chữ đề bài";
+      }
+
+      function showPromptTextEditor() {
+        promptTextWrap.classList.remove("is-hidden");
+        togglePromptTextBtn.textContent = "Ẩn ô chữ đề bài";
+      }
+
+      togglePromptTextBtn.addEventListener("click", () => {
+        const isHidden = promptTextWrap.classList.contains("is-hidden");
+        if (isHidden) {
+          showPromptTextEditor();
+          promptTextInput.focus();
+        } else {
+          promptTextWrap.classList.add("is-hidden");
+          togglePromptTextBtn.textContent = promptTextInput.value.trim()
+            ? "Hiện lại chữ đề bài"
+            : "+ Nhập / dán chữ đề bài";
+        }
+      });
+
+      function resetClassSession() {
+        if (state.isGrading) return;
+        clearUploadedFiles();
+        clearTextStudents();
+        clearPromptText();
+        studentNameInput.value = "";
+        extraNotesInput.value = "";
+        state.students = [];
+        state.activeStudentIndex = 0;
+        state.activeGroup = null;
+        state.selectedErrorId = null;
+        state.isSampleMode = false;
+        renderModeHeader();
+        renderActiveStudent();
+        showFeedback("Đã xóa dữ liệu lớp cũ. Bạn có thể nhập đề và bài làm cho lớp mới.", false);
+      }
+
+      formResetBtn.addEventListener("click", resetClassSession);
+      resetClassBtn.addEventListener("click", resetClassSession);
+
       restoreSampleBtn.addEventListener("click", () => {
+        if (state.isGrading) return;
+        clearUploadedFiles();
+        clearTextStudents();
+        clearPromptText();
+        renderSampleFiles();
         state.students = createSampleStudents();
         state.activeStudentIndex = 0;
         state.activeGroup = null;
@@ -2953,8 +1963,10 @@
         const entry = {
           file,
           name: displayName,
+          objectUrl,
           statusEl,
-          itemEl: item
+          itemEl: item,
+          graded: false
         };
         storeArray.push(entry);
 
@@ -2974,7 +1986,110 @@
         listEl.appendChild(item);
       }
 
-      function setupDropzone(zoneEl, inputEl, listEl, storeArray, statusMessage) {
+      function addTextStudentCard(defaultName = "", defaultText = "") {
+        const card = document.createElement("div");
+        card.className = "text-student-card";
+
+        const head = document.createElement("div");
+        head.className = "text-student-head";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.className = "text-input";
+        nameInput.placeholder = `Tên học sinh #${state.textStudents.length + 1}`;
+        nameInput.value = defaultName;
+
+        const statusSpan = document.createElement("span");
+        statusSpan.className = "text-student-status";
+        statusSpan.textContent = "Chờ chấm";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "file-remove";
+        removeBtn.setAttribute("aria-label", "Xóa bài học sinh này");
+        removeBtn.appendChild(createSvgCloseIcon());
+
+        head.append(nameInput, statusSpan, removeBtn);
+
+        const textInput = document.createElement("textarea");
+        textInput.className = "textarea-input";
+        textInput.rows = 3;
+        textInput.placeholder = "Dán hoặc gõ bài viết tiếng Anh của học sinh này...";
+        textInput.value = defaultText;
+
+        const entry = {
+          nameInput,
+          textInput,
+          statusSpan,
+          cardEl: card,
+          graded: false
+        };
+        state.textStudents.push(entry);
+
+        // If teacher edits a previously graded text entry, mark it pending again
+        const markDirty = () => {
+          if (entry.graded) {
+            entry.graded = false;
+            entry.statusSpan.textContent = "Đã sửa · chờ chấm";
+            entry.statusSpan.classList.remove("is-done");
+          }
+        };
+        nameInput.addEventListener("input", markDirty);
+        textInput.addEventListener("input", markDirty);
+
+        removeBtn.addEventListener("click", () => {
+          const idx = state.textStudents.indexOf(entry);
+          if (idx !== -1) state.textStudents.splice(idx, 1);
+          card.remove();
+        });
+
+        card.append(head, textInput);
+        textStudentsListEl.appendChild(card);
+        nameInput.focus();
+      }
+
+      addTextStudentBtn.addEventListener("click", () => addTextStudentCard());
+
+      function extractClipboardImages(clipboardData) {
+        if (!clipboardData) return [];
+        const images = [];
+        if (clipboardData.items) {
+          Array.from(clipboardData.items).forEach((item) => {
+            if (item.kind === "file" && item.type.startsWith("image/")) {
+              const file = item.getAsFile();
+              if (file) images.push(file);
+            }
+          });
+        }
+        if (images.length === 0 && clipboardData.files) {
+          Array.from(clipboardData.files).forEach((file) => {
+            if (file.type.startsWith("image/")) images.push(file);
+          });
+        }
+        return images;
+      }
+
+      let activePasteTarget = null;
+      const dropzoneControllers = [];
+
+      function setActivePasteTarget(zoneKey) {
+        activePasteTarget = zoneKey;
+        dropzoneControllers.forEach((ctrl) => {
+          const isMatch = ctrl.zoneKey === zoneKey;
+          ctrl.zoneEl.classList.toggle("is-paste-ready", isMatch);
+          if (ctrl.subHintEl) {
+            ctrl.subHintEl.textContent = isMatch
+              ? "Đang chọn — nhấn Ctrl+V để dán ảnh hoặc chữ ngay"
+              : ctrl.defaultHint;
+          }
+        });
+      }
+
+      function setupDropzone(options) {
+        const { zoneKey, zoneEl, browseBtn, inputEl, listEl, storeArray, statusMessage, onTextPaste } = options;
+        const subHintEl = zoneEl.querySelector("[data-default-hint]");
+        const defaultHint = subHintEl ? subHintEl.dataset.defaultHint || "" : "";
+
         const handleFiles = (fileList) => {
           Array.from(fileList).forEach((file) => {
             if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name)) {
@@ -2983,11 +2098,50 @@
           });
         };
 
-        zoneEl.addEventListener("click", () => inputEl.click());
+        const handlePasteData = (clipboardData) => {
+          const images = extractClipboardImages(clipboardData);
+          if (images.length > 0) {
+            handleFiles(images);
+            return true;
+          }
+          const pastedText = clipboardData ? clipboardData.getData("text/plain") : "";
+          if (pastedText && pastedText.trim() && typeof onTextPaste === "function") {
+            onTextPaste(pastedText.trim());
+            return true;
+          }
+          return false;
+        };
+
+        dropzoneControllers.push({ zoneKey, zoneEl, subHintEl, defaultHint, handleFiles, handlePasteData });
+
+        zoneEl.addEventListener("click", (e) => {
+          if (e.target === browseBtn || (browseBtn && browseBtn.contains(e.target))) {
+            return;
+          }
+          zoneEl.focus();
+          setActivePasteTarget(zoneKey);
+        });
+
+        zoneEl.addEventListener("focus", () => setActivePasteTarget(zoneKey));
+
+        if (browseBtn) {
+          browseBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            inputEl.click();
+          });
+        }
+
         zoneEl.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             inputEl.click();
+          }
+        });
+
+        zoneEl.addEventListener("paste", (e) => {
+          if (handlePasteData(e.clipboardData)) {
+            e.preventDefault();
+            e.stopPropagation();
           }
         });
 
@@ -3026,61 +2180,63 @@
       const promptFileList = document.getElementById("prompt-file-list");
       const workFileList = document.getElementById("work-file-list");
 
-      addSampleFileItem(promptFileList, {
-        name: "de-bai-article.png",
-        statusText: "Đọc xong: 3 đề + khung \"Prepare to write\"",
-        isPromptSample: true
+      renderSampleFiles();
+
+      const handlePromptFiles = setupDropzone({
+        zoneKey: "prompt",
+        zoneEl: document.getElementById("prompt-dropzone"),
+        browseBtn: document.getElementById("prompt-browse-btn"),
+        inputEl: document.getElementById("prompt-file-input"),
+        listEl: promptFileList,
+        storeArray: state.promptUploads,
+        statusMessage: "Đã thêm · chờ đọc đề",
+        onTextPaste: (text) => {
+          showPromptTextEditor();
+          promptTextInput.value = promptTextInput.value.trim()
+            ? `${promptTextInput.value.trim()}\n\n${text}`
+            : text;
+          showFeedback("Đã dán nội dung đề bài dạng chữ từ bộ nhớ tạm.", false);
+        }
       });
 
-      addSampleFileItem(workFileList, {
-        name: "gg-docs-your-week.png",
-        statusText: "Đọc xong 2 bài:",
-        tags: ["Quân", "Hân"],
-        isPromptSample: false
+      const handleWorkFiles = setupDropzone({
+        zoneKey: "work",
+        zoneEl: document.getElementById("work-dropzone"),
+        browseBtn: document.getElementById("work-browse-btn"),
+        inputEl: document.getElementById("work-file-input"),
+        listEl: workFileList,
+        storeArray: state.workUploads,
+        statusMessage: "Đã thêm · chờ nhận diện tên học sinh",
+        onTextPaste: (text) => {
+          addTextStudentCard("", text);
+          showFeedback("Đã thêm 1 bài viết học sinh từ văn bản vừa dán.", false);
+        }
       });
 
-      setupDropzone(
-        document.getElementById("prompt-dropzone"),
-        document.getElementById("prompt-file-input"),
-        promptFileList,
-        state.promptUploads,
-        "Đã thêm · chờ đọc đề"
-      );
-
-      const handleWorkFiles = setupDropzone(
-        document.getElementById("work-dropzone"),
-        document.getElementById("work-file-input"),
-        workFileList,
-        state.workUploads,
-        "Đã thêm · chờ nhận diện tên học sinh"
-      );
-
-      function extractClipboardImages(clipboardData) {
-        if (!clipboardData) return [];
-        const images = [];
-        if (clipboardData.items) {
-          Array.from(clipboardData.items).forEach((item) => {
-            if (item.kind === "file" && item.type.startsWith("image/")) {
-              const file = item.getAsFile();
-              if (file) images.push(file);
-            }
-          });
+      document.addEventListener("click", (e) => {
+        const insideDropzone = dropzoneControllers.some((ctrl) => ctrl.zoneEl.contains(e.target));
+        if (!insideDropzone) {
+          setActivePasteTarget(null);
         }
-        if (images.length === 0 && clipboardData.files) {
-          Array.from(clipboardData.files).forEach((file) => {
-            if (file.type.startsWith("image/")) images.push(file);
-          });
-        }
-        return images;
-      }
+      });
 
       document.addEventListener("paste", (e) => {
-        const images = extractClipboardImages(e.clipboardData);
-        if (images.length === 0) return;
         const activeTag = document.activeElement ? document.activeElement.tagName : "";
         if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
-        e.preventDefault();
-        handleWorkFiles(images);
+
+        if (activePasteTarget) {
+          const targetCtrl = dropzoneControllers.find((c) => c.zoneKey === activePasteTarget);
+          if (targetCtrl && targetCtrl.handlePasteData(e.clipboardData)) {
+            e.preventDefault();
+            return;
+          }
+        }
+
+        const images = extractClipboardImages(e.clipboardData);
+        if (images.length > 0) {
+          e.preventDefault();
+          handleWorkFiles(images);
+        }
       });
 
       /* -----------------------------
@@ -3219,6 +2375,7 @@
                 type: "OBJECT",
                 properties: {
                   name: { type: "STRING" },
+                  taskType: { type: "STRING" },
                   topicTitle: { type: "STRING" },
                   promptSummary: { type: "STRING" },
                   promptCriteria: {
@@ -3262,6 +2419,7 @@
                 },
                 required: [
                   "name",
+                  "taskType",
                   "topicTitle",
                   "promptSummary",
                   "promptCriteria",
@@ -3276,38 +2434,58 @@
         };
       }
 
-      function buildPromptInstructions() {
+      function buildPromptInstructions(pendingTextEntries, pendingWorkCount) {
         const levelInfo = LEVEL_INFO[state.level];
         const studentHint = studentNameInput.value.trim();
         const extraNotes = extraNotesInput.value.trim();
-        const pastedEssay = essayTextInput.value.trim();
+        const promptText = promptTextInput.value.trim();
+        const hasPrompt = state.promptUploads.length > 0 || promptText.length > 0;
 
         const lines = [
           "Bạn là trợ lý chấm bài viết tiếng Anh (Writing) dành cho giáo viên Việt Nam theo giáo trình Cambridge Prepare.",
           `Level học sinh đang chọn: ${levelInfo.label} (${levelInfo.prepare}).`,
           `Yêu cầu mức giải thích lỗi ("why"): ${levelInfo.desc}`,
           studentHint
-            ? `Tên học sinh giáo viên nhập sẵn: "${studentHint}" (dùng tên này nếu trong ảnh/bài không có tên khác rõ ràng).`
-            : "Tên học sinh chưa nhập: hãy tự đọc tên học sinh từ cột tên hoặc tiêu đề trong ảnh bài làm (nếu một ảnh có nhiều học sinh, tách thành từng phần tử riêng trong mảng students; nếu hoàn toàn không có tên thì đặt là \"Học sinh 1\").",
+            ? `Tên học sinh giáo viên nhập ở ô trên (chỉ dùng nếu bài làm chưa có tên): "${studentHint}".`
+            : "Hãy tự đọc tên học sinh cho từng bài làm (từ cột tên, tiêu đề ảnh, hoặc tên giáo viên nhập kèm bài viết; nếu một ảnh có nhiều học sinh, tách thành từng phần tử riêng trong mảng students; nếu hoàn toàn không có tên thì đặt là \"Học sinh 1\", \"Học sinh 2\"...).",
           extraNotes ? `Ghi chú thêm của giáo viên: ${extraNotes}` : "",
-          state.promptUploads.length > 0
-            ? "Có đính kèm ảnh đề bài: hãy đọc đề bài và khung gợi ý (nếu có, ví dụ 'Prepare to write'). Nếu ảnh có nhiều đề, tự chọn đúng đề khớp với bài của từng học sinh."
-            : "Không có ảnh đề bài: tự suy ra chủ đề bài viết trong topicTitle và đối chiếu theo 4 tiêu chí cấu trúc bài viết phù hợp ở level này.",
-          pastedEssay ? `Văn bản bài làm giáo viên dán trực tiếp:\n"""\n${pastedEssay}\n"""` : "",
+          hasPrompt
+            ? "Có đính kèm đề bài (ảnh và/hoặc văn bản): hãy đọc kỹ toàn bộ yêu cầu đề bài và khung gợi ý (nếu có). Nếu có nhiều đề, tự xác định mỗi học sinh làm đề nào và chấm đúng theo đề đó."
+            : "Không có đề bài kèm theo: hãy đọc bài làm (và ghi chú thêm nếu có) để tự suy ra dạng bài (`taskType`), chủ đề (`topicTitle`) và các tiêu chí phù hợp.",
+          promptText ? `Nội dung đề bài dạng chữ giáo viên cung cấp:\n"""\n${promptText}\n"""` : "",
+          pendingWorkCount > 0
+            ? `Có ${pendingWorkCount} ảnh bài làm mới bên dưới: có thể chứa 1 hoặc nhiều học sinh.`
+            : ""
+        ];
+
+        if (pendingTextEntries.length > 0) {
+          lines.push("Danh sách bài viết học sinh nhập bằng văn bản:");
+          pendingTextEntries.forEach((entry, i) => {
+            const stuName = entry.nameInput.value.trim() || `Học sinh văn bản ${i + 1}`;
+            lines.push(`--- BÀI VIẾT #${i + 1} (Tên: ${stuName}) ---\n${entry.textInput.value.trim()}`);
+          });
+        }
+
+        lines.push(
           "",
           "QUY TẮC BẮT BUỘC:",
           "1. Tuyệt đối KHÔNG chấm điểm, KHÔNG dùng điểm số hay xếp loại A/B/C/D ở bất kỳ trường nào. Không dùng emoji.",
-          "2. Tách toàn bộ bài viết gốc của từng học sinh thành mảng `segments` liên tiếp nhau sao cho khi nối tất cả `seg.text` lại phải KHỚP NGUYÊN VĂN 100% bài học sinh viết (giữ nguyên mọi dấu cách, dấu câu và lỗi sai gốc, không tự sửa ngầm trong `type: \"text\"`).",
-          "3. Mỗi lỗi cần sửa là một phần tử `type: \"error\"` trong `segments`, phân loại chính xác vào 1 trong 4 nhóm: `Grammar`, `Vocabulary`, `Logic`, `Spelling & Punctuation`.",
-          "4. Với mỗi `type: \"error\"`: `text` là đoạn sai nguyên văn của học sinh; `fix` là đoạn sửa ngắn gọn, tự nhiên, giữ nguyên ý và giọng văn học sinh; `why` giải thích bằng tiếng Việt đúng level đang chọn (câu đầu tiên phải tóm tắt ngắn gọn lý do để hiển thị trong bảng); `example` là 1 câu ví dụ tiếng Anh minh họa đúng ngữ cảnh và level.",
-          "5. `promptCriteria` gồm 4 mục đánh giá đối chiếu với đề bài/khung gợi ý (`status`: \"yes\" | \"partial\" | \"no\", `desc`: 1 câu tiếng Việt ngắn).",
-          "6. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`)."
-        ];
+          "2. Nếu có nhiều học sinh (từ nhiều ảnh, trong cùng một ảnh, hoặc từ nhiều bài văn bản), trả về MỖI HỌC SINH LÀ MỘT PHẦN TỬ RIÊNG trong mảng `students` với phần chữa lỗi, nhận xét và bản viết lại riêng biệt.",
+          "3. Tách toàn bộ bài viết gốc của từng học sinh thành mảng `segments` liên tiếp nhau sao cho khi nối tất cả `seg.text` lại phải KHỚP NGUYÊN VĂN 100% bài học sinh viết (giữ nguyên mọi dấu cách, dấu câu và lỗi sai gốc, không tự sửa ngầm trong `type: \"text\"`).",
+          "4. Mỗi lỗi cần sửa là một phần tử `type: \"error\"` trong `segments`, phân loại chính xác vào 1 trong 4 nhóm: `Grammar`, `Vocabulary`, `Logic`, `Spelling & Punctuation`.",
+          "5. Với mỗi `type: \"error\"`: `text` là đoạn sai nguyên văn của học sinh; `fix` là đoạn sửa ngắn gọn, tự nhiên, giữ nguyên ý và giọng văn học sinh; `why` giải thích bằng tiếng Việt đúng level đang chọn (câu đầu tiên phải tóm tắt ngắn gọn lý do để hiển thị trong bảng); `example` là 1 câu ví dụ tiếng Anh minh họa đúng ngữ cảnh và level.",
+          "6. TIÊU CHÍ ĐỐI CHIẾU ĐỀ BÀI (`taskType` & `promptCriteria`) — PHẢI THAY ĐỔI LINH HOẠT THEO TỪNG DẠNG BÀI, KHÔNG DÙNG TIÊU CHÍ CỐ ĐỊNH:",
+          "   - Xác định đúng `taskType` (VD: \"Email / Letter\", \"Story\", \"Article\", \"Opinion Essay\", \"Review\", \"Report\", \"Note / Message\", \"Paragraph\").",
+          "   - Đọc hiểu mọi yêu cầu cụ thể trong đề bài (đối tượng người đọc, các câu hỏi/ý bắt buộc phải trả lời, thì động từ yêu cầu, giọng văn thân mật/trang trọng, độ dài từ trong đề hoặc ghi chú, các gợi ý trong khung đề) để tự tạo 3 đến 5 tiêu chí ĐẶC THÙ cho đúng dạng bài đó.",
+          "   - Ví dụ: nếu là Email -> kiểm tra lời chào/kết thư đúng người nhận, trả lời đủ các câu hỏi trong đề, giọng văn phù hợp; nếu là Story -> kiểm tra bố cục mở-thân-kết, dùng đúng thì quá khứ, từ nối thời gian, chi tiết miêu tả; nếu là Opinion Essay -> kiểm tra câu nêu quan điểm, lý lẽ & ví dụ, từ nối lập luận, câu kết; nếu là Review -> giới thiệu đối tượng, miêu tả điểm nổi bật, nhận xét khen/chê có lý do, lời khuyên.",
+          "   - Mỗi phần tử trong `promptCriteria` gồm `title`, `status` (\"yes\" | \"partial\" | \"no\"), `desc` (1 câu tiếng Việt chỉ rõ bằng chứng trong bài của bạn đó).",
+          "7. `strengths` gồm 3 điểm làm tốt (tiếng Việt). `improvements` gồm 3 ưu tiên cải thiện theo thứ tự quan trọng, có nhắc số thứ tự lỗi (1, 2, 3... theo đúng thứ tự các lỗi trong `segments`)."
+        );
 
         return lines.filter(Boolean).join("\n");
       }
 
-      function normalizeStudentResult(raw, index) {
+      function normalizeStudentResult(raw, uniqueSeed) {
         const rawSegments = Array.isArray(raw.segments) ? raw.segments : [];
         const tokens = [];
         const errors = [];
@@ -3336,12 +2514,20 @@
         });
 
         const topic = String(raw.topicTitle || "Bài viết tiếng Anh").trim();
+        const taskType = String(raw.taskType || "").trim();
+        const hasPrompt = state.promptUploads.length > 0 || promptTextInput.value.trim().length > 0;
+        const metaParts = [];
+        if (hasPrompt) metaParts.push("Đối chiếu đề bài");
+        if (taskType) metaParts.push(`Dạng bài: ${taskType}`);
+        if (topic) metaParts.push(topic);
+
         return {
-          id: `ai-student-${index + 1}`,
-          name: String(raw.name || `Học sinh ${index + 1}`).trim(),
+          id: `ai-student-${uniqueSeed}`,
+          name: String(raw.name || `Học sinh ${uniqueSeed}`).trim(),
           status: "graded",
+          taskType,
           topicTitle: topic,
-          promptMeta: state.promptUploads.length > 0 ? `Đọc từ ảnh đề · ${topic}` : topic,
+          promptMeta: metaParts.join(" · ") || "Đối chiếu theo yêu cầu đề bài",
           promptSummary: String(raw.promptSummary || "Đối chiếu theo nội dung bài viết và yêu cầu đề bài."),
           promptCriteria: Array.isArray(raw.promptCriteria) && raw.promptCriteria.length
             ? raw.promptCriteria.map((c) => ({
@@ -3418,8 +2604,13 @@
         if (state.isGrading) return;
 
         const apiKey = apiKeyInput.value.trim();
-        const pastedEssay = essayTextInput.value.trim();
-        const hasRealWork = state.workUploads.length > 0 || pastedEssay.length > 0;
+        const pendingUploads = state.workUploads.filter((u) => !u.graded);
+        const pendingTextEntries = state.textStudents.filter(
+          (t) => !t.graded && t.textInput.value.trim().length > 0
+        );
+        const hasAnyRealInput =
+          state.workUploads.length > 0 ||
+          state.textStudents.some((t) => t.textInput.value.trim().length > 0);
 
         if (!apiKey) {
           document.getElementById("ai-settings-box").open = true;
@@ -3431,10 +2622,18 @@
           return;
         }
 
-        if (!hasRealWork) {
+        if (!hasAnyRealInput) {
           showFeedback(
-            "Hiện mới có file mẫu. Hãy thêm ít nhất 1 ảnh bài làm (hoặc dán văn bản bài làm) để AI chấm.",
+            "Hãy thêm ít nhất 1 ảnh bài làm hoặc bấm \"+ Thêm bài viết học sinh\" để nhập bài cần chấm.",
             true
+          );
+          return;
+        }
+
+        if (pendingUploads.length === 0 && pendingTextEntries.length === 0) {
+          showFeedback(
+            "Các bài bạn vừa nhập đều đã chấm xong. Hãy thêm ảnh/bài viết mới để chấm thêm tab học sinh, hoặc bấm \"Reset lớp mới\".",
+            false
           );
           return;
         }
@@ -3442,10 +2641,10 @@
         state.isGrading = true;
         gradeBtn.disabled = true;
         gradeBtn.textContent = "Đang chấm bài với AI...";
-        showFeedback("Đang chuẩn bị ảnh và chọn model Gemini phù hợp...", false);
+        showFeedback("Đang chuẩn bị dữ liệu và chọn model Gemini phù hợp...", false);
 
         try {
-          const parts = [{ text: buildPromptInstructions() }];
+          const parts = [{ text: buildPromptInstructions(pendingTextEntries, pendingUploads.length) }];
 
           if (state.promptUploads.length > 0) {
             parts.push({ text: "[ẢNH ĐỀ BÀI]" });
@@ -3455,13 +2654,18 @@
             }
           }
 
-          if (state.workUploads.length > 0) {
+          if (pendingUploads.length > 0) {
             parts.push({ text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" });
-            for (const entry of state.workUploads) {
+            for (const entry of pendingUploads) {
               setItemStatus(entry, "Đang nhận diện bài làm...", [], false);
               parts.push(await prepareImagePart(entry.file));
             }
           }
+
+          pendingTextEntries.forEach((entry) => {
+            entry.statusSpan.textContent = "Đang chấm...";
+            entry.statusSpan.classList.remove("is-done");
+          });
 
           const candidates = await resolveModelCandidates(apiKey);
           let parsed = null;
@@ -3489,41 +2693,63 @@
             throw lastError || new Error("AI không tách được bài làm học sinh nào.");
           }
 
-          const gradedStudents = parsed.students.map((st, i) => normalizeStudentResult(st, i));
-          const studentNames = gradedStudents.map((s) => s.name);
+          const baseIndex = state.isSampleMode ? 0 : state.students.length;
+          const newlyGraded = parsed.students.map((st, i) =>
+            normalizeStudentResult(st, baseIndex + i + 1)
+          );
+          const newNames = newlyGraded.map((s) => s.name);
 
           state.promptUploads.forEach((entry) => {
+            entry.graded = true;
             setItemStatus(entry, "Đã đọc đề bài", [], true);
           });
 
-          state.workUploads.forEach((entry) => {
-            setItemStatus(entry, `Đã chấm ${gradedStudents.length} bài:`, studentNames, true);
+          pendingUploads.forEach((entry) => {
+            entry.graded = true;
+            setItemStatus(entry, `Đã chấm ${newlyGraded.length} bài:`, newNames, true);
           });
 
-          state.students = gradedStudents;
-          state.activeStudentIndex = 0;
+          pendingTextEntries.forEach((entry) => {
+            entry.graded = true;
+            entry.statusSpan.textContent = "Đã chấm";
+            entry.statusSpan.classList.add("is-done");
+          });
+
+          if (state.isSampleMode || state.students.length === 0) {
+            state.students = newlyGraded;
+            state.activeStudentIndex = 0;
+          } else {
+            state.activeStudentIndex = state.students.length;
+            state.students = state.students.concat(newlyGraded);
+          }
+
+          const activeStu = getActiveStudent();
           state.activeGroup = null;
-          state.selectedErrorId = gradedStudents[0].errors.length ? gradedStudents[0].errors[0].id : null;
+          state.selectedErrorId = activeStu && activeStu.errors.length ? activeStu.errors[0].id : null;
           state.isSampleMode = false;
 
           renderModeHeader();
           renderActiveStudent();
           showFeedback(
-            `Chấm xong ${gradedStudents.length} bài bằng ${usedModel}.`,
+            `Đã chấm thêm ${newlyGraded.length} bài (${newNames.join(", ")}) bằng ${usedModel}.`,
             false
           );
         } catch (err) {
           state.promptUploads.forEach((entry) => {
             setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false);
           });
-          state.workUploads.forEach((entry) => {
+          pendingUploads.forEach((entry) => {
             setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
+          });
+          pendingTextEntries.forEach((entry) => {
+            entry.statusSpan.textContent = "Chờ chấm";
+            entry.statusSpan.classList.remove("is-done");
           });
           showFeedback(`Không thể chấm bài: ${err.message}`, true);
         } finally {
           state.isGrading = false;
           gradeBtn.disabled = false;
-          gradeBtn.textContent = "Chấm bài";
+          renderModeHeader();
         }
       }
 
