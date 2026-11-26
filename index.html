@@ -600,15 +600,17 @@
           <div class="key-row">
             <input id="api-key-input" class="text-input" type="password" autocomplete="off" placeholder="Dán Gemini API Key (AIza...)" aria-label="Gemini API Key" />
             <button type="button" class="btn-secondary" id="toggle-key-btn">Hiện</button>
+            <button type="button" class="btn-secondary" id="test-key-btn">Kiểm tra</button>
           </div>
           <select id="model-select" class="select-input" aria-label="Chọn model Gemini">
-            <option value="auto">Model: Tự động chọn Flash mới nhất</option>
-            <option value="gemini-3.8-flash">gemini-3.8-flash</option>
-            <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite</option>
+            <option value="auto">Model: Tự động chọn Flash khả dụng</option>
             <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+            <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
             <option value="custom">Nhập tên model khác...</option>
           </select>
-          <input id="custom-model-input" class="text-input is-hidden" type="text" placeholder="VD: gemini-3.8-flash" aria-label="Tên model Gemini tùy chỉnh" />
+          <input id="custom-model-input" class="text-input is-hidden" type="text" placeholder="VD: gemini-2.5-flash" aria-label="Tên model Gemini tùy chỉnh" />
           <p class="field-note">Key chỉ lưu trên trình duyệt của bạn. Lấy key miễn phí tại <a class="ai-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.</p>
         </div>
       </details>
@@ -869,6 +871,7 @@
 
       const apiKeyInput = document.getElementById("api-key-input");
       const toggleKeyBtn = document.getElementById("toggle-key-btn");
+      const testKeyBtn = document.getElementById("test-key-btn");
       const aiKeyStatusEl = document.getElementById("ai-key-status");
       const modelSelect = document.getElementById("model-select");
       const customModelInput = document.getElementById("custom-model-input");
@@ -1526,7 +1529,12 @@
       });
 
       function resetClassSession() {
-        if (state.isGrading) return;
+        if (state.isGrading) {
+          if (state.abortController) {
+            state.abortController.abort(new Error("USER_CANCELLED"));
+          }
+          return;
+        }
         clearUploadedFiles();
         clearTextStudents();
         clearPromptText();
@@ -1947,7 +1955,7 @@
 
       function prepareImagePart(file) {
         return new Promise((resolve, reject) => {
-          if (file.size <= 1200 * 1024 && /^image\/(png|jpeg|webp)$/i.test(file.type)) {
+          if (file.size <= 220 * 1024 && /^image\/(png|jpeg|webp)$/i.test(file.type)) {
             fileToBase64Raw(file).then((inlineData) => resolve({ inlineData })).catch(reject);
             return;
           }
@@ -1956,7 +1964,7 @@
           const img = new Image();
           img.onload = () => {
             URL.revokeObjectURL(url);
-            const maxDim = 1800;
+            const maxDim = 1400;
             let { width, height } = img;
             if (width > maxDim || height > maxDim) {
               const scale = maxDim / Math.max(width, height);
@@ -1972,7 +1980,7 @@
               return;
             }
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
             const commaIdx = dataUrl.indexOf(",");
             resolve({
               inlineData: {
@@ -2000,7 +2008,97 @@
         return ver + penalty;
       }
 
-      async function resolveModelCandidates(apiKey) {
+      async function fetchAvailableFlashModels(apiKey, signal) {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`,
+          { signal }
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = (data && data.error && data.error.message) || `HTTP ${res.status}`;
+          const err = new Error(msg);
+          err.status = res.status;
+          throw err;
+        }
+        return (data.models || [])
+          .filter((m) => {
+            const name = m.name || "";
+            const methods = m.supportedGenerationMethods || [];
+            return (
+              methods.includes("generateContent") &&
+              /gemini/i.test(name) &&
+              /flash/i.test(name) &&
+              !/tts|image|audio|robotics|computer-use|embedding|live|thinking/i.test(name)
+            );
+          })
+          .sort((a, b) => parseModelScore(b.name) - parseModelScore(a.name))
+          .map((m) => m.name.replace(/^models\//, ""));
+      }
+
+      function populateModelDropdown(liveModels) {
+        if (!Array.isArray(liveModels) || liveModels.length === 0) return;
+        const currentVal = modelSelect.value;
+        modelSelect.textContent = "";
+
+        const autoOpt = document.createElement("option");
+        autoOpt.value = "auto";
+        autoOpt.textContent = `Model: Tự động (${liveModels[0]})`;
+        modelSelect.appendChild(autoOpt);
+
+        liveModels.slice(0, 8).forEach((id) => {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = id;
+          modelSelect.appendChild(opt);
+        });
+
+        const customOpt = document.createElement("option");
+        customOpt.value = "custom";
+        customOpt.textContent = "Nhập tên model khác...";
+        modelSelect.appendChild(customOpt);
+
+        if (Array.from(modelSelect.options).some((o) => o.value === currentVal)) {
+          modelSelect.value = currentVal;
+        } else {
+          modelSelect.value = "auto";
+          storageSet(STORAGE_KEY_MODEL, "auto");
+        }
+        syncCustomModelVisibility();
+      }
+
+      testKeyBtn.addEventListener("click", async () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+          apiKeyInput.focus();
+          showFeedback("Hãy dán Gemini API Key trước khi kiểm tra.", true);
+          return;
+        }
+        testKeyBtn.disabled = true;
+        testKeyBtn.textContent = "Đang thử...";
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 15000);
+        try {
+          const models = await fetchAvailableFlashModels(apiKey, ctrl.signal);
+          populateModelDropdown(models);
+          aiKeyStatusEl.textContent = models.length ? `OK (${models.length} model)` : "Key hợp lệ";
+          aiKeyStatusEl.classList.add("is-ready");
+          showFeedback(
+            models.length
+              ? `Kết nối Gemini thành công. Tìm thấy ${models.length} model Flash (mặc định: ${models[0]}).`
+              : "Key hợp lệ nhưng chưa thấy model Flash trong danh sách mặc định.",
+            false
+          );
+        } catch (err) {
+          const msg = err.name === "AbortError" ? "Hết thời gian kết nối (15s)." : err.message;
+          showFeedback(`Kiểm tra key thất bại: ${msg}`, true);
+        } finally {
+          clearTimeout(timer);
+          testKeyBtn.disabled = false;
+          testKeyBtn.textContent = "Kiểm tra";
+        }
+      });
+
+      async function resolveModelCandidates(apiKey, signal) {
         const selected = modelSelect.value;
         if (selected === "custom") {
           const custom = customModelInput.value.trim().replace(/^models\//, "");
@@ -2010,32 +2108,18 @@
           return [custom];
         }
 
-        const fallback = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-2.0-flash"];
+        const fallback = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-3-flash-preview"];
         const preferred = selected !== "auto" ? [selected] : [];
 
         try {
-          const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
-            headers: { "x-goog-api-key": apiKey }
-          });
-          if (!res.ok) return Array.from(new Set([...preferred, ...fallback]));
-          const data = await res.json();
-          const models = (data.models || [])
-            .filter((m) => {
-              const name = m.name || "";
-              const methods = m.supportedGenerationMethods || [];
-              return (
-                methods.includes("generateContent") &&
-                /gemini/i.test(name) &&
-                /flash/i.test(name) &&
-                !/tts|image|audio|robotics|computer-use|embedding|live/i.test(name)
-              );
-            })
-            .sort((a, b) => parseModelScore(b.name) - parseModelScore(a.name))
-            .map((m) => m.name.replace(/^models\//, ""));
-
+          const models = await fetchAvailableFlashModels(apiKey, signal);
           if (models.length === 0) return Array.from(new Set([...preferred, ...fallback]));
-          return Array.from(new Set([...preferred, ...models.slice(0, 3), ...fallback]));
+          populateModelDropdown(models);
+          return Array.from(new Set([...preferred, ...models.slice(0, 4), ...fallback]));
         } catch (err) {
+          if (err.status === 400 || err.status === 401 || err.status === 403) {
+            throw err;
+          }
           return Array.from(new Set([...preferred, ...fallback]));
         }
       }
@@ -2229,9 +2313,57 @@
         };
       }
 
-      async function callGeminiWithModel(apiKey, modelId, parts) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent`;
-        const body = {
+      async function fetchGenerateContent(apiKey, modelId, body, parentSignal, timeoutMs = 55000) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const timeoutCtrl = new AbortController();
+        let timedOut = false;
+        const timer = setTimeout(() => {
+          timedOut = true;
+          timeoutCtrl.abort();
+        }, timeoutMs);
+
+        const onParentAbort = () => timeoutCtrl.abort();
+        if (parentSignal) {
+          if (parentSignal.aborted) timeoutCtrl.abort();
+          else parentSignal.addEventListener("abort", onParentAbort, { once: true });
+        }
+
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: timeoutCtrl.signal
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const msg = (data && data.error && data.error.message) || `HTTP ${res.status}`;
+            const err = new Error(msg);
+            err.status = res.status;
+            throw err;
+          }
+          return data;
+        } catch (err) {
+          if (err.name === "AbortError") {
+            if (timedOut) {
+              const timeoutErr = new Error(`Model ${modelId} phản hồi quá lâu (hết ${Math.round(timeoutMs / 1000)}s).`);
+              timeoutErr.status = 408;
+              throw timeoutErr;
+            }
+            const cancelErr = new Error("Đã hủy chấm bài.");
+            cancelErr.isUserCancel = true;
+            throw cancelErr;
+          }
+          throw err;
+        } finally {
+          clearTimeout(timer);
+          if (parentSignal) parentSignal.removeEventListener("abort", onParentAbort);
+        }
+      }
+
+      async function callGeminiWithModel(apiKey, modelId, parts, parentSignal) {
+        const bodyWithSchema = {
           contents: [{ role: "user", parts }],
           generationConfig: {
             temperature: 0.2,
@@ -2240,21 +2372,22 @@
           }
         };
 
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey
-          },
-          body: JSON.stringify(body)
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const msg = (data && data.error && data.error.message) || `HTTP ${res.status}`;
-          const err = new Error(msg);
-          err.status = res.status;
-          throw err;
+        let data;
+        try {
+          data = await fetchGenerateContent(apiKey, modelId, bodyWithSchema, parentSignal, 55000);
+        } catch (err) {
+          if (err.status === 400 && /schema/i.test(err.message || "")) {
+            const bodyJsonOnly = {
+              contents: [{ role: "user", parts }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: "application/json"
+              }
+            };
+            data = await fetchGenerateContent(apiKey, modelId, bodyJsonOnly, parentSignal, 55000);
+          } else {
+            throw err;
+          }
         }
 
         const candidate = data && data.candidates && data.candidates[0];
@@ -2265,7 +2398,8 @@
           candidate.content.parts.map((p) => p.text || "").join("");
 
         if (!rawText) {
-          throw new Error("Gemini không trả về nội dung văn bản.");
+          const reason = candidate && candidate.finishReason ? ` (${candidate.finishReason})` : "";
+          throw new Error(`Gemini không trả về nội dung văn bản${reason}.`);
         }
 
         const cleaned = rawText
@@ -2315,9 +2449,20 @@
         }
 
         state.isGrading = true;
+        state.abortController = new AbortController();
         gradeBtn.disabled = true;
-        gradeBtn.textContent = "Đang chấm bài với AI...";
-        showFeedback("Đang chuẩn bị dữ liệu và chọn model Gemini phù hợp...", false);
+        formResetBtn.textContent = "Hủy";
+        let elapsedSec = 0;
+        let currentStageMsg = "Đang chuẩn bị ảnh và kết nối Gemini...";
+        const updateTimerUI = () => {
+          gradeBtn.textContent = `Đang chấm... (${elapsedSec}s)`;
+          showFeedback(`${currentStageMsg} (${elapsedSec}s)`, false);
+        };
+        updateTimerUI();
+        const elapsedTimer = setInterval(() => {
+          elapsedSec += 1;
+          updateTimerUI();
+        }, 1000);
 
         try {
           const parts = [{ text: buildPromptInstructions(pendingTextEntries, pendingUploads.length) }];
@@ -2347,23 +2492,24 @@
             entry.statusSpan.classList.remove("is-done");
           });
 
-          const candidates = await resolveModelCandidates(apiKey);
+          const candidates = await resolveModelCandidates(apiKey, state.abortController.signal);
           let parsed = null;
           let usedModel = candidates[0];
           let lastError = null;
 
           for (const modelId of candidates) {
             usedModel = modelId;
-            showFeedback(`Đang phân tích và chấm bài bằng ${modelId}...`, false);
+            currentStageMsg = `Đang phân tích và chấm bài bằng ${modelId}`;
+            updateTimerUI();
             try {
-              parsed = await callGeminiWithModel(apiKey, modelId, parts);
+              parsed = await callGeminiWithModel(apiKey, modelId, parts, state.abortController.signal);
               break;
             } catch (err) {
               lastError = err;
-              if (err.status === 401 || err.status === 403) {
+              if (err.isUserCancel || err.status === 401 || err.status === 403) {
                 throw err;
               }
-              if (err.status !== 404 && candidates.length === 1) {
+              if (candidates.length === 1) {
                 throw err;
               }
             }
@@ -2410,7 +2556,7 @@
           renderModeHeader();
           renderActiveStudent();
           showFeedback(
-            `Đã chấm thêm ${newlyGraded.length} bài (${newNames.join(", ")}) bằng ${usedModel}.`,
+            `Đã chấm ${newlyGraded.length} bài (${newNames.join(", ")}) bằng ${usedModel} trong ${elapsedSec}s.`,
             false
           );
         } catch (err) {
@@ -2424,10 +2570,16 @@
             entry.statusSpan.textContent = "Chờ chấm";
             entry.statusSpan.classList.remove("is-done");
           });
-          showFeedback(`Không thể chấm bài: ${err.message}`, true);
+          showFeedback(
+            err.isUserCancel ? "Đã hủy lượt chấm bài." : `Không thể chấm bài: ${err.message}`,
+            !err.isUserCancel
+          );
         } finally {
+          clearInterval(elapsedTimer);
           state.isGrading = false;
+          state.abortController = null;
           gradeBtn.disabled = false;
+          formResetBtn.textContent = "Reset lớp";
           renderModeHeader();
         }
       }
