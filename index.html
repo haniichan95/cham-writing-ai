@@ -1759,14 +1759,14 @@
           if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
           entry.itemEl.remove();
         });
-        state.promptUploads = [];
-        state.workUploads = [];
+        state.promptUploads.length = 0;
+        state.workUploads.length = 0;
         promptFileList.textContent = "";
         workFileList.textContent = "";
       }
 
       function clearTextStudents() {
-        state.textStudents = [];
+        state.textStudents.length = 0;
         textStudentsListEl.textContent = "";
       }
 
@@ -2086,11 +2086,12 @@
       }
 
       function setupDropzone(options) {
-        const { zoneKey, zoneEl, browseBtn, inputEl, listEl, storeArray, statusMessage, onTextPaste } = options;
+        const { zoneKey, zoneEl, browseBtn, inputEl, listEl, getStore, statusMessage, onTextPaste } = options;
         const subHintEl = zoneEl.querySelector("[data-default-hint]");
         const defaultHint = subHintEl ? subHintEl.dataset.defaultHint || "" : "";
 
         const handleFiles = (fileList) => {
+          const storeArray = getStore();
           Array.from(fileList).forEach((file) => {
             if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name)) {
               addUploadedFileItem(listEl, storeArray, file, statusMessage);
@@ -2188,7 +2189,7 @@
         browseBtn: document.getElementById("prompt-browse-btn"),
         inputEl: document.getElementById("prompt-file-input"),
         listEl: promptFileList,
-        storeArray: state.promptUploads,
+        getStore: () => state.promptUploads,
         statusMessage: "Đã thêm · chờ đọc đề",
         onTextPaste: (text) => {
           showPromptTextEditor();
@@ -2205,7 +2206,7 @@
         browseBtn: document.getElementById("work-browse-btn"),
         inputEl: document.getElementById("work-file-input"),
         listEl: workFileList,
-        storeArray: state.workUploads,
+        getStore: () => state.workUploads,
         statusMessage: "Đã thêm · chờ nhận diện tên học sinh",
         onTextPaste: (text) => {
           addTextStudentCard("", text);
@@ -2332,16 +2333,15 @@
           }
           return [custom];
         }
-        if (selected !== "auto") {
-          return [selected];
-        }
 
         const fallback = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-2.0-flash"];
+        const preferred = selected !== "auto" ? [selected] : [];
+
         try {
           const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
             headers: { "x-goog-api-key": apiKey }
           });
-          if (!res.ok) return fallback;
+          if (!res.ok) return Array.from(new Set([...preferred, ...fallback]));
           const data = await res.json();
           const models = (data.models || [])
             .filter((m) => {
@@ -2357,11 +2357,10 @@
             .sort((a, b) => parseModelScore(b.name) - parseModelScore(a.name))
             .map((m) => m.name.replace(/^models\//, ""));
 
-          if (models.length === 0) return fallback;
-          const unique = Array.from(new Set([...models.slice(0, 3), ...fallback]));
-          return unique;
+          if (models.length === 0) return Array.from(new Set([...preferred, ...fallback]));
+          return Array.from(new Set([...preferred, ...models.slice(0, 3), ...fallback]));
         } catch (err) {
-          return fallback;
+          return Array.from(new Set([...preferred, ...fallback]));
         }
       }
 
