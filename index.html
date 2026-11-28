@@ -253,6 +253,9 @@
     .text-student-status.is-done { color: var(--accent-text); }
     .text-student-card .textarea-input { background: var(--surface); min-height: 66px; font-size: 12px; padding: 6px 8px; }
     .btn-add-student { border: 1px dashed var(--border-strong); background: var(--surface); color: var(--accent-text); border-radius: 8px; padding: 7px 9px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+    .doc-import-row { display: flex; gap: 6px; }
+    .doc-import-row .text-input { flex: 1; min-width: 0; }
+    .doc-import-row .btn-secondary { white-space: nowrap; }
     .btn-add-student:hover { background: var(--accent-tint); border-color: var(--accent); }
     .form-actions-row { display: flex; gap: 7px; align-items: stretch; }
     .form-actions-row .btn-primary { flex: 1; }
@@ -345,7 +348,7 @@
     .ratio-seg[data-group="Logic"] { background: var(--err-logic); }
     .ratio-seg[data-group="Spelling & Punctuation"] { background: var(--err-spelling); }
 
-    .essay-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.2; margin: 0; word-wrap: break-word; }
+    .essay-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.2; margin: 0; word-wrap: break-word; white-space: pre-wrap; }
     .err-mark {
       cursor: pointer; border-radius: 5px; padding: 1px 3px; margin: 0 1px;
       text-decoration-line: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
@@ -475,7 +478,7 @@
     .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); }
     .btn-secondary.is-copied { background: var(--accent-tint); border-color: var(--accent-border); color: var(--accent-text); }
 
-    .rewrite-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.0; margin: 0 0 10px; word-wrap: break-word; }
+    .rewrite-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.0; margin: 0 0 10px; word-wrap: break-word; white-space: pre-wrap; }
     .rewrite-change { border-radius: 5px; padding: 1px 4px; }
     .rewrite-body.show-highlights .rewrite-change { background-color: var(--accent-tint-strong); }
 
@@ -575,6 +578,11 @@
 
       <div class="field-group">
         <span class="field-label"><span class="step-num">05</span> Bài làm của học sinh <span class="field-sub">nhiều ảnh hoặc nhiều bài cùng lúc</span></span>
+        <div class="doc-import-row">
+          <input id="doc-url-input" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="Dán link Google Docs (bảng Tên | Bài)" aria-label="Link Google Docs chứa bài làm" />
+          <button type="button" class="btn-secondary" id="doc-import-btn">Lấy bài</button>
+        </div>
+        <p class="field-note">Docs cần chia sẻ “Bất kỳ ai có đường liên kết”. Mỗi dòng trong bảng thành 1 bài; ảnh đề ở đầu Docs tự vào mục 03.</p>
         <div class="file-list" id="work-file-list"></div>
         <div class="dropzone" id="work-dropzone" tabindex="0" aria-label="Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm">
           <span class="dropzone-main">Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm</span>
@@ -1028,7 +1036,7 @@
           if (student.status === "graded") {
             subSpan.textContent = `${student.errors.length} lỗi`;
           } else {
-            subSpan.textContent = "chưa chấm";
+            subSpan.textContent = student.tabNote || "chưa chấm";
           }
 
           btn.append(nameSpan, subSpan);
@@ -1677,7 +1685,7 @@
         listEl.appendChild(item);
       }
 
-      function addTextStudentCard(defaultName = "", defaultText = "") {
+      function addTextStudentCard(defaultName = "", defaultText = "", options = {}) {
         const card = document.createElement("div");
         card.className = "text-student-card";
 
@@ -1712,8 +1720,10 @@
           nameInput,
           textInput,
           statusSpan,
+          removeBtn,
           cardEl: card,
-          graded: false
+          graded: false,
+          studentId: null // id tab kết quả đã chấm, để chấm lại thì thay đúng tab đó
         };
         state.textStudents.push(entry);
 
@@ -1736,7 +1746,7 @@
 
         card.append(head, textInput);
         textStudentsListEl.appendChild(card);
-        nameInput.focus();
+        if (options.focus !== false) nameInput.focus();
       }
 
       addTextStudentBtn.addEventListener("click", () => addTextStudentCard());
@@ -1898,8 +1908,213 @@
         getStore: () => state.workUploads,
         statusMessage: "Đã thêm · chờ nhận diện tên học sinh",
         onTextPaste: (text) => {
+          // Dán link Google Docs vào ô bài làm → tự lấy bài thay vì tạo 1 bài chứa đường link
+          if (getDocId(text) && /docs\.google\.com/.test(text)) {
+            docUrlInput.value = text;
+            importFromGoogleDoc();
+            return;
+          }
           addTextStudentCard("", text);
           showFeedback("Đã thêm 1 bài viết học sinh từ văn bản vừa dán.", false);
+        }
+      });
+
+      /* -----------------------------
+       * Lấy bài từ link Google Docs
+       * Gọi bản xuất HTML của Docs: chữ lấy trực tiếp nên đúng từng ký tự (không qua AI đọc ảnh).
+       * Bố cục mong đợi: ảnh đề ở đầu tài liệu + bảng "Tên | Bài". Bình luận giáo viên [a], [b]… bị bỏ.
+       * Google chỉ cho gọi từ trang http/https (GitHub Pages, localhost), KHÔNG cho file:// (mở bằng bấm đúp).
+       * ----------------------------- */
+      const docUrlInput = document.getElementById("doc-url-input");
+      const docImportBtn = document.getElementById("doc-import-btn");
+
+      function getDocId(url) {
+        const s = String(url || "").trim();
+        const m = s.match(/\/document\/(?:u\/\d+\/)?d\/([\w-]{20,})/);
+        return m ? m[1] : (/^[\w-]{25,}$/.test(s) ? s : null);
+      }
+
+      function countWords(text) {
+        return String(text || "").trim().split(/\s+/).filter(Boolean).length;
+      }
+
+      function parseGoogleDocHtml(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        // Docs đặt style trong class CSS → gom lại để biết chữ nào có màu / gạch ngang
+        const css = {};
+        doc.querySelectorAll("style").forEach((st) => {
+          for (const m of st.textContent.matchAll(/\.([\w-]+)\s*\{([^}]*)\}/g)) {
+            css[m[1]] = (css[m[1]] || "") + ";" + m[2];
+          }
+        });
+        const styleOf = (el) =>
+          Array.from(el.classList).map((c) => css[c] || "").join(";") + ";" + (el.getAttribute("style") || "");
+        // Chữ màu (không phải đen/xám) = giáo viên chèn thêm khi sửa trên Docs → bỏ để giữ bài gốc
+        const isColored = (s) => {
+          const all = Array.from(s.matchAll(/(?:^|[;{\s])color\s*:\s*#([0-9a-f]{6})/gi));
+          const m = all[all.length - 1];
+          if (!m) return false;
+          const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+          return Math.max(r, g, b) - Math.min(r, g, b) > 60;
+        };
+        // Bỏ nội dung bình luận ở cuối tài liệu rồi bỏ dấu [a] [b] chen trong bài
+        doc.querySelectorAll('a[href^="#cmnt_ref"], a[href^="#ftnt_ref"]').forEach((a) => {
+          (a.closest("div") || a.closest("p") || a).remove();
+        });
+        doc.querySelectorAll('a[href^="#cmnt"], a[href^="#ftnt"]').forEach((a) => a.remove());
+
+        const isTeacherInsert = (node, stop) => {
+          let strike = false, colored = false, link = false;
+          for (let el = node.parentElement; el && el !== stop.parentElement; el = el.parentElement) {
+            const s = styleOf(el);
+            if (/text-decoration[^;]*line-through/.test(s) || el.tagName === "S" || el.tagName === "DEL") strike = true;
+            if (isColored(s)) colored = true;
+            if (el.tagName === "A") link = true;
+          }
+          // Docs tự biến "Festival.We" (thiếu dấu cách) thành link xanh → không phải chữ giáo viên chèn
+          if (link) colored = false;
+          return colored && !strike;
+        };
+        const blockText = (el) => {
+          const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+          let out = "";
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            if (n.nodeType === 1) {
+              if (n.tagName === "BR") out += "\n";
+              continue;
+            }
+            if (!isTeacherInsert(n, el)) out += n.nodeValue;
+          }
+          return out.replace(/ /g, " ").replace(/[ \t]+/g, " ")
+            .split("\n").map((line) => line.trim()).join("\n").trim();
+        };
+        const cellText = (cell) => {
+          const blocks = cell.querySelectorAll("p, li, h1, h2, h3, h4, h5, h6");
+          const lines = blocks.length ? Array.from(blocks).map(blockText) : [blockText(cell)];
+          return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+        };
+
+        const firstTable = doc.querySelector("table");
+        // Ảnh nằm trước bảng đầu tiên = ảnh đề bài
+        const images = Array.from(doc.querySelectorAll("img"))
+          .filter((img) => !img.closest("table") &&
+            (!firstTable || (img.compareDocumentPosition(firstTable) & Node.DOCUMENT_POSITION_FOLLOWING)))
+          .map((img) => img.getAttribute("src"))
+          .filter(Boolean);
+
+        const students = [];
+        const skipped = [];
+        doc.querySelectorAll("table").forEach((table) => {
+          if (table.parentElement && table.parentElement.closest("table")) return;
+          Array.from(table.rows).forEach((tr, rowIdx) => {
+            const cells = Array.from(tr.cells);
+            if (!cells.length) return;
+            const name = cells.length > 1 ? cellText(cells[0]).replace(/\s+/g, " ") : "";
+            const text = (cells.length > 1 ? cells.slice(1) : cells).map(cellText).filter(Boolean).join("\n");
+            const n = countWords(text);
+            if (rowIdx === 0 && n < 15) return; // dòng tiêu đề bảng, VD "Names | Reply emails"
+            if (!name && text && students.length) { // ô tên gộp → bài viết tiếp của học sinh trước
+              students[students.length - 1].text += "\n" + text;
+              return;
+            }
+            if (!n) { if (name) skipped.push(name); return; }
+            students.push({ name, text });
+          });
+        });
+        if (!firstTable) { // không có bảng: cả tài liệu là 1 bài
+          const text = cellText(doc.body.cloneNode(true));
+          if (countWords(text)) students.push({ name: "", text });
+        }
+        return { students, skipped, images };
+      }
+
+      async function fetchGoogleDoc(url) {
+        const id = getDocId(url);
+        if (!id) throw new Error("Link chưa đúng. Hãy dán link Google Docs dạng https://docs.google.com/document/d/…");
+        const tab = (String(url).match(/[?&]tab=(t\.[\w.-]+)/) || [])[1];
+        let res;
+        try {
+          res = await fetch(`https://docs.google.com/document/d/${id}/export?format=html${tab ? "&tab=" + tab : ""}`);
+        } catch (err) {
+          throw new Error(location.protocol === "file:"
+            ? "Trang đang mở bằng file trên máy nên Google chặn lấy Docs. Hãy mở trang bằng link GitHub Pages (https://…github.io/…) rồi thử lại."
+            : "Không mở được Docs. Trên Docs bấm Chia sẻ → Quyền truy cập chung → “Bất kỳ ai có đường liên kết” (Người xem), rồi thử lại.");
+        }
+        if (!res.ok) {
+          throw new Error(res.status === 404
+            ? "Không tìm thấy tài liệu. Kiểm tra lại link."
+            : "Không mở được Docs. Trên Docs bấm Chia sẻ → “Bất kỳ ai có đường liên kết” (Người xem), rồi thử lại.");
+        }
+        const parsed = parseGoogleDocHtml(await res.text());
+        const blobs = [];
+        for (const src of parsed.images.slice(0, 6)) {
+          try {
+            const blob = await (await fetch(src)).blob();
+            if (/^image\//.test(blob.type)) blobs.push(blob);
+          } catch (err) {
+            // Ảnh không tải được thì bỏ qua, giáo viên tự dán ảnh đề
+          }
+        }
+        parsed.imageBlobs = blobs;
+        return parsed;
+      }
+
+      async function importFromGoogleDoc() {
+        if (state.isGrading) return;
+        const url = docUrlInput.value.trim();
+        if (!url) {
+          docUrlInput.focus();
+          showFeedback("Hãy dán link Google Docs chứa bài làm trước.", true);
+          return;
+        }
+        docImportBtn.disabled = true;
+        docImportBtn.textContent = "Đang lấy...";
+        showFeedback("Đang lấy bài từ Google Docs...", false);
+        try {
+          const result = await fetchGoogleDoc(url);
+          if (!result.students.length) {
+            throw new Error("Không thấy bài nào trong Docs. Bài cần nằm trong bảng 2 cột Tên | Bài.");
+          }
+          // Bỏ các ô bài trống còn sót để danh sách gọn
+          state.textStudents
+            .filter((t) => !t.graded && !t.textInput.value.trim())
+            .forEach((t) => t.removeBtn.click());
+          // Không thêm trùng bài đã có (bấm "Lấy bài" 2 lần)
+          const existing = new Set(state.textStudents.map((t) => t.textInput.value.trim()));
+          const fresh = result.students.filter((st) => !existing.has(st.text.trim()));
+          fresh.forEach((st) => addTextStudentCard(st.name, st.text, { focus: false }));
+
+          let promptAdded = 0;
+          if (result.imageBlobs.length && state.promptUploads.length === 0 && !promptTextInput.value.trim()) {
+            result.imageBlobs.forEach((blob, i) => {
+              const ext = (blob.type.split("/")[1] || "png").replace("jpeg", "jpg");
+              const file = new File([blob], `anh-de-tu-docs-${i + 1}.${ext}`, { type: blob.type });
+              addUploadedFileItem(promptFileList, state.promptUploads, file, "Đã thêm từ Docs · chờ đọc đề");
+            });
+            promptAdded = result.imageBlobs.length;
+          }
+
+          const dup = result.students.length - fresh.length;
+          showFeedback(
+            `Đã lấy ${fresh.length} bài từ Google Docs${promptAdded ? ` và ${promptAdded} ảnh đề` : ""}.` +
+              (dup ? ` ${dup} bài đã có sẵn nên không thêm lại.` : "") +
+              (result.skipped.length ? ` Bỏ qua (chưa có bài): ${result.skipped.join(", ")}.` : "") +
+              " Kiểm tra lại rồi bấm Chấm bài.",
+            false
+          );
+        } catch (err) {
+          showFeedback(err.message || "Không đọc được Docs. Thử lại sau.", true);
+        } finally {
+          docImportBtn.disabled = false;
+          docImportBtn.textContent = "Lấy bài";
+        }
+      }
+
+      docImportBtn.addEventListener("click", importFromGoogleDoc);
+      docUrlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          importFromGoogleDoc();
         }
       });
 
@@ -2430,6 +2645,66 @@
         }
       }
 
+      /* Chấm từng học sinh một request riêng (chạy song song GRADE_CONCURRENCY bài).
+       * Trước đây cả lớp gửi chung 1 request → JSON trả về rất dài, hay quá thời gian chờ
+       * hoặc bị cắt MAX_TOKENS, rồi lại thử lần lượt 5 model với cả lớp (có thể mất vài phút rồi vẫn lỗi). */
+      const GRADE_CONCURRENCY = 3;
+      let studentSeq = 0;
+
+      async function runWithConcurrency(items, limit, worker) {
+        let next = 0;
+        const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+          while (next < items.length) {
+            const idx = next++;
+            await worker(items[idx], idx);
+          }
+        });
+        await Promise.all(runners);
+      }
+
+      /* Gọi Gemini cho 1 phần việc, thử lần lượt các model dự phòng nếu model trước lỗi tạm thời. */
+      async function gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs, onModel) {
+        const attemptErrors = [];
+        for (const modelId of candidates) {
+          if (onModel) onModel(modelId);
+          try {
+            const parsed = await callGeminiWithModel(apiKey, modelId, parts, signal, timeoutMs);
+            if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
+              throw new Error("AI không trả về bài làm nào.");
+            }
+            return { parsed, modelId };
+          } catch (err) {
+            if (err.isUserCancel || err.status === 401 || err.status === 403 || candidates.length === 1) throw err;
+            attemptErrors.push(`${modelId}: ${err.message}`);
+          }
+        }
+        throw new Error(attemptErrors.join(" | "));
+      }
+
+      function makePlaceholder(id, name, title, desc, tabNote) {
+        return { id, name, status: "pending", emptyTitle: title, emptyDesc: desc, tabNote, tokens: [], errors: [] };
+      }
+
+      function replaceStudentById(id, student) {
+        const idx = state.students.findIndex((s) => s.id === id);
+        if (idx === -1) return -1;
+        state.students[idx] = student;
+        return idx;
+      }
+
+      /* Vẽ lại sau khi 1 bài xong: nếu đang xem đúng bài đó thì vẽ cả bài, không thì chỉ cập nhật tab. */
+      function refreshAfterStudentUpdate(changedIdx) {
+        renderModeHeader();
+        if (changedIdx === state.activeStudentIndex) {
+          const st = getActiveStudent();
+          state.activeGroup = null;
+          state.selectedErrorId = st && st.errors && st.errors.length ? st.errors[0].id : null;
+          renderActiveStudent();
+        } else {
+          renderStudentTabs();
+        }
+      }
+
       async function handleGradeWithAI() {
         if (state.isGrading) return;
 
@@ -2454,7 +2729,7 @@
 
         if (!hasAnyRealInput) {
           showFeedback(
-            "Hãy thêm ít nhất 1 ảnh bài làm hoặc bấm \"+ Thêm bài viết học sinh\" để nhập bài cần chấm.",
+            "Hãy dán link Google Docs, thêm ít nhất 1 ảnh bài làm hoặc bấm \"+ Thêm bài viết học sinh\" để nhập bài cần chấm.",
             true
           );
           return;
@@ -2470,12 +2745,21 @@
 
         state.isGrading = true;
         state.abortController = new AbortController();
+        const signal = state.abortController.signal;
         gradeBtn.disabled = true;
         formResetBtn.textContent = "Hủy";
+
+        const totalJobs = pendingTextEntries.length + (pendingUploads.length > 0 ? 1 : 0);
+        let doneJobs = 0;
+        let failedJobs = 0;
+        let gradedCount = 0;
+        const usedModels = new Set();
         let elapsedSec = 0;
         let currentStageMsg = "Đang chuẩn bị ảnh và kết nối Gemini...";
         const updateTimerUI = () => {
-          gradeBtn.textContent = `Đang chấm... (${elapsedSec}s)`;
+          gradeBtn.textContent = totalJobs > 1
+            ? `Đang chấm ${doneJobs}/${totalJobs}... (${elapsedSec}s)`
+            : `Đang chấm... (${elapsedSec}s)`;
           showFeedback(`${currentStageMsg} (${elapsedSec}s)`, false);
         };
         updateTimerUI();
@@ -2484,131 +2768,157 @@
           updateTimerUI();
         }, 1000);
 
-        try {
-          const parts = [{ text: buildPromptInstructions(pendingTextEntries, pendingUploads.length) }];
+        // Bài văn bản: tạo sẵn tab "đang chấm" theo đúng thứ tự (chấm lại bài đã sửa thì thay đúng tab cũ)
+        const textJobs = pendingTextEntries.map((entry, i) => {
+          const name = entry.nameInput.value.trim() || `Học sinh ${state.students.length + i + 1}`;
+          const prevIdx = entry.studentId ? state.students.findIndex((s) => s.id === entry.studentId) : -1;
+          const existing = prevIdx !== -1 ? state.students[prevIdx] : null;
+          // Chỉ giữ lại kết quả cũ nếu đã chấm xong; tab báo lỗi cũ thì thay luôn
+          const prev = existing && existing.status === "graded" ? existing : null;
+          const id = existing ? existing.id : `ai-student-${++studentSeq}`;
+          const placeholder = makePlaceholder(
+            id, name,
+            `Đang chấm bài của ${name}...`,
+            "Bài này sẽ hiện ra ngay khi AI chấm xong. Bạn có thể bấm sang tab khác để xem bài đã chấm.",
+            "đang chấm"
+          );
+          if (existing) state.students[prevIdx] = placeholder;
+          else state.students.push(placeholder);
+          entry.statusSpan.textContent = "Đang chấm...";
+          entry.statusSpan.classList.remove("is-done");
+          return { kind: "text", entry, id, name, prev };
+        });
+        const firstNewIdx = textJobs.length ? state.students.findIndex((s) => s.id === textJobs[0].id) : -1;
+        if (firstNewIdx !== -1) state.activeStudentIndex = firstNewIdx;
+        renderModeHeader();
+        renderActiveStudent();
 
+        try {
+          // Ảnh đề chỉ chuẩn bị 1 lần, dùng chung cho mọi bài
+          const promptImageParts = [];
           if (state.promptUploads.length > 0) {
-            parts.push({
+            promptImageParts.push({
               text: `[TẬP HỢP ${state.promptUploads.length} ẢNH ĐỀ BÀI — HÃY LIÊN KẾT TẤT CẢ CÁC ẢNH NÀY THÀNH BỘ YÊU CẦU & TIÊU CHÍ THỐNG NHẤT]`
             });
-            const promptParts = await Promise.all(
+            const prepared = await Promise.all(
               state.promptUploads.map((entry, i) => {
                 setItemStatus(entry, `Đang gửi mảnh đề #${i + 1}...`, [], false);
                 return prepareImagePart(entry.file);
               })
             );
             state.promptUploads.forEach((entry, i) => {
-              parts.push({ text: `[PHẦN ĐỀ BÀI #${i + 1}: ${entry.name}]` });
-              parts.push(promptParts[i]);
+              promptImageParts.push({ text: `[PHẦN ĐỀ BÀI #${i + 1}: ${entry.name}]` });
+              promptImageParts.push(prepared[i]);
             });
           }
 
+          const jobs = [...textJobs];
           if (pendingUploads.length > 0) {
-            parts.push({ text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" });
             const workParts = await Promise.all(
               pendingUploads.map((entry) => {
                 setItemStatus(entry, "Đang nhận diện bài làm...", [], false);
                 return prepareImagePart(entry.file);
               })
             );
-            workParts.forEach((part) => parts.push(part));
+            jobs.push({ kind: "images", uploads: pendingUploads, workParts });
           }
 
-          pendingTextEntries.forEach((entry) => {
-            entry.statusSpan.textContent = "Đang chấm...";
-            entry.statusSpan.classList.remove("is-done");
-          });
+          const candidates = await resolveModelCandidates(apiKey, signal);
+          currentStageMsg = totalJobs > 1
+            ? `Đang chấm ${totalJobs} phần việc song song bằng ${candidates[0]}`
+            : `Đang phân tích và chấm bài bằng ${candidates[0]}`;
+          updateTimerUI();
 
-          const candidates = await resolveModelCandidates(apiKey, state.abortController.signal);
-          let parsed = null;
-          let usedModel = candidates[0];
-          let lastError = null;
-          const attemptErrors = [];
-          const perModelTimeout = candidates.length === 1 ? 90000 : 70000;
-
-          for (const modelId of candidates) {
-            usedModel = modelId;
-            currentStageMsg = `Đang phân tích và chấm bài bằng ${modelId}`;
-            updateTimerUI();
+          await runWithConcurrency(jobs, GRADE_CONCURRENCY, async (job) => {
             try {
-              parsed = await callGeminiWithModel(
-                apiKey,
-                modelId,
-                parts,
-                state.abortController.signal,
-                perModelTimeout
-              );
-              break;
+              if (job.kind === "text") {
+                const parts = [{ text: buildPromptInstructions([job.entry], 0) }, ...promptImageParts];
+                const timeoutMs = candidates.length === 1 ? 120000 : 90000;
+                const { parsed, modelId } = await gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs);
+                usedModels.add(modelId);
+                const result = normalizeStudentResult(parsed.students[0], studentSeq);
+                result.id = job.id;
+                result.name = job.entry.nameInput.value.trim() || result.name || job.name;
+                const idx = replaceStudentById(job.id, result);
+                job.entry.graded = true;
+                job.entry.studentId = job.id;
+                job.entry.statusSpan.textContent = "Đã chấm";
+                job.entry.statusSpan.classList.add("is-done");
+                gradedCount += 1;
+                refreshAfterStudentUpdate(idx);
+              } else {
+                const parts = [
+                  { text: buildPromptInstructions([], job.uploads.length) },
+                  ...promptImageParts,
+                  { text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" },
+                  ...job.workParts
+                ];
+                const timeoutMs = Math.min(180000, 90000 + job.uploads.length * 20000);
+                const { parsed, modelId } = await gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs);
+                usedModels.add(modelId);
+                const results = parsed.students.map((st) => normalizeStudentResult(st, ++studentSeq));
+                const startIdx = state.students.length;
+                state.students = state.students.concat(results);
+                job.uploads.forEach((entry) => {
+                  entry.graded = true;
+                  setItemStatus(entry, `Đã chấm ${results.length} bài:`, results.map((s) => s.name), true);
+                });
+                gradedCount += results.length;
+                // Chỉ có ảnh (không có bài văn bản đang chờ) → mở luôn tab bài đầu tiên vừa chấm
+                if (firstNewIdx === -1) state.activeStudentIndex = startIdx;
+                refreshAfterStudentUpdate(firstNewIdx === -1 ? startIdx : -1);
+              }
             } catch (err) {
-              lastError = err;
-              attemptErrors.push(`${modelId}: ${err.message}`);
-              if (err.isUserCancel || err.status === 401 || err.status === 403) {
-                throw err;
+              if (err.isUserCancel) throw err;
+              failedJobs += 1;
+              if (job.kind === "text") {
+                // Lỗi khi chấm lại bài đã có kết quả → giữ kết quả cũ; bài mới → tab báo lỗi
+                const failTab = job.prev || makePlaceholder(
+                  job.id, job.name,
+                  `Chưa chấm được bài của ${job.name}`,
+                  `${err.message} — Bấm "Chấm bài" để thử lại riêng bài này.`,
+                  "lỗi"
+                );
+                const idx = replaceStudentById(job.id, failTab);
+                job.entry.studentId = job.id;
+                job.entry.statusSpan.textContent = "Lỗi · chấm lại";
+                job.entry.statusSpan.classList.remove("is-done");
+                refreshAfterStudentUpdate(idx);
+              } else {
+                job.uploads.forEach((entry) => setItemStatus(entry, `Lỗi: ${err.message}`, [], false));
               }
-              if (candidates.length === 1) {
-                throw err;
-              }
+            } finally {
+              doneJobs += 1;
+              updateTimerUI();
             }
-          }
-
-          if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
-            if (attemptErrors.length > 1) {
-              throw new Error(attemptErrors.join(" | "));
-            }
-            throw lastError || new Error("AI không tách được bài làm học sinh nào.");
-          }
-
-          const baseIndex = state.students.length;
-          const newlyGraded = parsed.students.map((st, i) =>
-            normalizeStudentResult(st, baseIndex + i + 1)
-          );
-          const newNames = newlyGraded.map((s) => s.name);
-
-          state.promptUploads.forEach((entry) => {
-            entry.graded = true;
-            setItemStatus(entry, "Đã đọc đề bài", [], true);
           });
 
-          pendingUploads.forEach((entry) => {
-            entry.graded = true;
-            setItemStatus(entry, `Đã chấm ${newlyGraded.length} bài:`, newNames, true);
-          });
-
-          pendingTextEntries.forEach((entry) => {
-            entry.graded = true;
-            entry.statusSpan.textContent = "Đã chấm";
-            entry.statusSpan.classList.add("is-done");
-          });
-
-          if (state.students.length === 0) {
-            state.students = newlyGraded;
-            state.activeStudentIndex = 0;
+          state.promptUploads.forEach((entry) => setItemStatus(entry, "Đã đọc đề bài", [], true));
+          const modelText = usedModels.size ? ` bằng ${Array.from(usedModels).join(", ")}` : "";
+          if (failedJobs === 0) {
+            showFeedback(`Đã chấm ${gradedCount} bài${modelText} trong ${elapsedSec}s.`, false);
           } else {
-            state.activeStudentIndex = state.students.length;
-            state.students = state.students.concat(newlyGraded);
+            showFeedback(
+              `Đã chấm ${gradedCount} bài${modelText}; ${failedJobs} phần chưa chấm được (xem tab báo lỗi). Bấm "Chấm bài" để thử lại riêng các bài lỗi.`,
+              true
+            );
           }
-
-          const activeStu = getActiveStudent();
-          state.activeGroup = null;
-          state.selectedErrorId = activeStu && activeStu.errors.length ? activeStu.errors[0].id : null;
-
-          renderModeHeader();
-          renderActiveStudent();
-          showFeedback(
-            `Đã chấm ${newlyGraded.length} bài (${newNames.join(", ")}) bằng ${usedModel} trong ${elapsedSec}s.`,
-            false
-          );
         } catch (err) {
-          state.promptUploads.forEach((entry) => {
-            setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false);
+          // Hủy hoặc lỗi chung (key sai, mất mạng...): trả các tab đang chờ về trạng thái trước đó
+          textJobs.forEach((job) => {
+            const cur = state.students.find((s) => s.id === job.id);
+            if (!cur || cur.status === "graded") return;
+            if (job.prev) replaceStudentById(job.id, job.prev);
+            else state.students = state.students.filter((s) => s.id !== job.id);
+            job.entry.statusSpan.textContent = "Chờ chấm";
+            job.entry.statusSpan.classList.remove("is-done");
           });
+          state.activeStudentIndex = Math.min(state.activeStudentIndex, Math.max(0, state.students.length - 1));
+          state.promptUploads.forEach((entry) => setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false));
           pendingUploads.forEach((entry) => {
-            setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
+            if (!entry.graded) setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
           });
-          pendingTextEntries.forEach((entry) => {
-            entry.statusSpan.textContent = "Chờ chấm";
-            entry.statusSpan.classList.remove("is-done");
-          });
+          renderActiveStudent();
           showFeedback(
             err.isUserCancel ? "Đã hủy lượt chấm bài." : `Không thể chấm bài: ${err.message}`,
             !err.isUserCancel
