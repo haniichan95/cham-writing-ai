@@ -80,8 +80,8 @@ rich([("4. Gõ Xong rồi vẫn sửa bài được, cô sẽ chấm lại phầ
 para("ĐỀ BÀI", bold=True, size=13, color=TEAL, after=2)
 rich([("Level: ", True), ("___   (ghi 1 trong: A1 / A2 / B1 / B2)", False)], after=0)
 rich([("Số từ: ", True), ("___", False)], after=2)
-para("(Cô dán chữ đề vào đây, gồm cả khung “Prepare to write” và các gợi ý. Có thể chèn thêm ảnh đề bên dưới "
-     "để học sinh xem; trang chấm dùng phần chữ.)", italic=True, size=10, color=GRAY, after=10)
+para("(Cô dán ảnh đề vào ngay dưới dòng này: ảnh đề bài và ảnh khung Review / Prepare to write. Không cần gõ lại "
+     "chữ đề. Nếu cô gõ chữ đề ở đây thì trang chấm dùng phần chữ và bỏ qua ảnh.)", italic=True, size=10, color=GRAY, after=10)
 
 # Bài làm
 para("BÀI LÀM", bold=True, size=13, color=TEAL, after=4)

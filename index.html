@@ -2021,7 +2021,8 @@
           if (link) colored = false;
           return colored && !strike;
         };
-        const blockText = (el) => {
+        // keepAll: lấy cả chữ màu (dùng cho phần ĐỀ BÀI; quy tắc bỏ chữ màu chỉ dành cho bài làm trong bảng)
+        const blockText = (el, keepAll = false) => {
           const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
           let out = "";
           for (let n = walker.nextNode(); n; n = walker.nextNode()) {
@@ -2029,7 +2030,7 @@
               if (n.tagName === "BR") out += "\n";
               continue;
             }
-            if (!isTeacherInsert(n, el)) out += n.nodeValue.replace(/\s*\n\s*/g, " ");
+            if (keepAll || !isTeacherInsert(n, el)) out += n.nodeValue.replace(/\s*\n\s*/g, " ");
           }
           return out.replace(/ /g, " ").replace(/[ \t]+/g, " ")
             .split("\n").map((line) => line.trim()).join("\n").trim();
@@ -2116,20 +2117,21 @@
         }
 
         /* Phần "ĐỀ BÀI" phía trên bảng: lấy chữ đề + Level. Dòng bắt đầu bằng "(Cô" là ghi chú mẫu, bỏ qua. */
-        const prompt = { text: "", level: null };
+        const prompt = { text: "", level: null, hasTask: false };
         if (firstTable) {
           const lines = [];
           for (const el of doc.body.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li")) {
             if (el.closest("table")) continue;
             if (!(el.compareDocumentPosition(firstTable) & Node.DOCUMENT_POSITION_FOLLOWING)) break;
-            lines.push(blockText(el));
+            lines.push(blockText(el, true));
           }
           const start = lines.findIndex((l) => /^đề\s*bài(?![\p{L}\p{N}])/u.test(lower(l)));
           if (start !== -1) {
             let rest = lines.slice(start + 1);
             const end = rest.findIndex((l) => /^bài\s*làm(?![\p{L}\p{N}])/u.test(lower(l))); // tiêu đề "BÀI LÀM" ngay trên bảng
             if (end !== -1) rest = rest.slice(0, end);
-            const body = rest.filter((l) => l && !/^\(\s*cô(?![\p{L}\p{N}])/u.test(lower(l)));
+            // Bỏ dòng ghi chú mẫu "(Cô …)" và dòng chưa điền (còn "___")
+            const body = rest.filter((l) => l && !/^\(\s*cô(?![\p{L}\p{N}])/u.test(lower(l)) && !/_{3,}/.test(l));
             const levelLine = body.find((l) => /^(level|trình độ)\s*[:：]/.test(lower(l)));
             if (levelLine) {
               const codes = levelLine.toUpperCase().match(/\b(A1|A2|B1|B2)\b/g) || [];
@@ -2139,6 +2141,8 @@
               prompt.level = unique.length === 1 ? unique[0] : byPrep; // mẫu chưa điền (A1 / A2 / B1 / B2) → bỏ qua
             }
             prompt.text = body.filter((l) => l !== levelLine).join("\n").trim();
+            // Có chữ đề thật hay chỉ có dòng "Số từ: …" (đề nằm trong ảnh)?
+            prompt.hasTask = body.some((l) => l !== levelLine && !/^số\s*từ\s*[:：]/u.test(lower(l)));
           }
         }
         return { students, skipped, images, order, prompt };
@@ -2368,7 +2372,8 @@
 
           // Phần "ĐỀ BÀI" dạng chữ trong Docs → mục 03 (nếu đang trống) và Level
           let promptFromDoc = false;
-          if (result.prompt.text && !promptTextInput.value.trim()) {
+          const promptWasEmpty = !promptTextInput.value.trim();
+          if (result.prompt.text && promptWasEmpty) {
             promptTextInput.value = result.prompt.text;
             showPromptTextEditor();
             promptFromDoc = true;
@@ -2381,8 +2386,10 @@
 
           let promptAdded = 0;
           // Docs đã có chữ đề thì không lấy ảnh đề nữa: AI đọc chữ chính xác hơn, và khỏi gửi ảnh kèm từng bài
-          const canAddDocImages = state.promptUploads.length === 0 && !result.prompt.text &&
-            (!promptTextInput.value.trim() || (restored && restored.hadDocImages));
+          // Ảnh đề trong Docs được lấy khi Docs chưa gõ chữ đề (chỉ "Số từ" thì vẫn lấy ảnh).
+          // Docs đã gõ chữ đề thì bỏ ảnh: AI đọc chữ chính xác hơn và khỏi gửi ảnh kèm từng bài.
+          const canAddDocImages = state.promptUploads.length === 0 && !result.prompt.hasTask &&
+            (promptWasEmpty || promptFromDoc || (restored && restored.hadDocImages));
           if (result.imageBlobs.length && canAddDocImages) {
             result.imageBlobs.forEach((blob, i) => {
               const ext = (blob.type.split("/")[1] || "png").replace("jpeg", "jpg");
@@ -2408,7 +2415,7 @@
           showFeedback(
             (restored ? `Đã mở lại lớp đang chấm dở (${restored.graded} bài đã chấm). ` : "") +
               `Docs: ${parts.join(" · ") || "không có bài"}.` +
-              (promptFromDoc ? " Đã lấy đề dạng chữ." : "") +
+              (promptFromDoc && result.prompt.hasTask ? " Đã lấy đề dạng chữ." : "") +
               (result.prompt.level ? ` Level ${result.prompt.level}.` : "") +
               (promptAdded ? ` Đã thêm ${promptAdded} ảnh đề.` : "") +
               (waiting ? ` Bấm "Chấm bài" để chấm ${waiting} bài cần chấm.` : " Không có bài mới cần chấm."),
