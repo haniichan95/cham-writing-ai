@@ -469,6 +469,14 @@
     .table-fix { color: var(--accent-text); font-weight: 600; }
     .table-group-cell { white-space: nowrap; font-weight: 500; color: var(--text-secondary); }
 
+    .confirm-cell { text-align: center; width: 1%; }
+    .confirm-cell input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+    .detail-confirm-btn { padding: 5px 10px; font-size: 12px; white-space: nowrap; }
+    .detail-confirm-btn.is-on { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+    .docs-write-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .docs-write-bar .btn-primary { width: auto; padding: 9px 14px; }
+    .docs-write-bar .btn-primary:disabled { cursor: not-allowed; }
+    .docs-write-note { flex-basis: 100%; margin: 0; }
     .rewrite-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .switch-label { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); cursor: pointer; user-select: none; }
     .switch-input {
@@ -641,6 +649,17 @@
         </div>
       </details>
 
+      <details class="ai-box" id="gdocs-settings-box">
+        <summary>
+          <span>Ghi vào Google Docs</span>
+          <span class="ai-status-dot" id="gdocs-status">Chưa cài đặt</span>
+        </summary>
+        <div class="ai-box-body">
+          <input id="gdocs-client-id-input" class="text-input" type="text" autocomplete="off" spellcheck="false" placeholder="Dán Google Client ID (…apps.googleusercontent.com)" aria-label="Google Client ID" />
+          <p class="field-note">Cài đặt 1 lần theo <a class="ai-link" href="https://github.com/haniichan95/cham-writing-ai#ghi-lỗi-đã-chốt-vào-google-docs" target="_blank" rel="noopener noreferrer">hướng dẫn</a>. Khi ghi, trang hỏi đăng nhập Gmail có quyền sửa Docs của lớp.</p>
+        </div>
+      </details>
+
       <div class="form-actions-row">
         <button type="button" class="btn-primary" id="grade-btn">Chấm bài</button>
         <button type="button" class="btn-reset" id="form-reset-btn">Reset lớp</button>
@@ -707,6 +726,7 @@
             <div class="detail-footer">
               <span class="detail-level-note" id="detail-level-note"></span>
               <div class="nav-arrows">
+                <button type="button" class="btn-secondary detail-confirm-btn" id="detail-confirm-btn" aria-pressed="false">Chốt</button>
                 <button type="button" class="icon-btn" id="prev-err-btn" aria-label="Lỗi trước">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
@@ -748,13 +768,24 @@
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Bảng tổng hợp lỗi</h2>
-            <span class="card-meta">Bấm vào số để xem chi tiết</span>
+            <div class="rewrite-controls">
+              <span class="card-meta">Tích “Chốt” những lỗi muốn gửi cho học sinh</span>
+              <button type="button" class="btn-secondary" id="confirm-all-btn">Chốt tất cả</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table class="error-table">
-              <thead><tr><th>#</th><th>Loại</th><th>Bài viết</th><th>Sửa thành</th><th>Lý do</th></tr></thead>
+              <thead><tr><th>#</th><th>Loại</th><th>Bài viết</th><th>Sửa thành</th><th>Lý do</th><th>Chốt</th></tr></thead>
               <tbody id="error-table-body"></tbody>
             </table>
+          </div>
+          <div class="docs-write-bar">
+            <button type="button" class="btn-primary" id="docs-write-btn">Ghi lỗi đã chốt vào Google Docs</button>
+            <label class="switch-label">
+              <input type="checkbox" class="switch-input" id="docs-with-reason" />
+              <span>Kèm lý do</span>
+            </label>
+            <p class="field-note docs-write-note" id="docs-write-note"></p>
           </div>
         </section>
 
@@ -933,6 +964,7 @@
       const detailWhyEl = document.getElementById("detail-why");
       const detailExampleEl = document.getElementById("detail-example");
       const prevErrBtn = document.getElementById("prev-err-btn");
+      const detailConfirmBtn = document.getElementById("detail-confirm-btn");
       const nextErrBtn = document.getElementById("next-err-btn");
 
       const promptMetaEl = document.getElementById("prompt-meta");
@@ -1191,7 +1223,7 @@
           const sup = document.createElement("sup");
           sup.className = "err-sup";
           sup.dataset.group = err.group;
-          sup.textContent = String(err.id);
+          sup.textContent = String(err.id) + (err.confirmed ? "✓" : ""); // ✓ = đã chốt
           sup.setAttribute("aria-hidden", "true");
           span.appendChild(sup);
 
@@ -1220,8 +1252,10 @@
           detailExampleEl.textContent = "Keep up the good work.";
           prevErrBtn.disabled = true;
           nextErrBtn.disabled = true;
+          detailConfirmBtn.classList.add("is-hidden");
           return;
         }
+        detailConfirmBtn.classList.remove("is-hidden");
 
         detailWrongBoxEl.classList.remove("is-hidden");
         const visible = getVisibleErrors(student);
@@ -1241,6 +1275,9 @@
         detailFixTextEl.textContent = err.fix;
         detailWhyEl.textContent = err.why;
         detailExampleEl.textContent = err.example;
+        detailConfirmBtn.classList.toggle("is-on", !!err.confirmed);
+        detailConfirmBtn.setAttribute("aria-pressed", err.confirmed ? "true" : "false");
+        detailConfirmBtn.textContent = err.confirmed ? "Đã chốt ✓" : "Chốt";
 
         const idx = visible.findIndex((e) => e.id === err.id);
         prevErrBtn.disabled = idx <= 0;
@@ -1254,7 +1291,7 @@
         if (visible.length === 0) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 5;
+          td.colSpan = 6;
           td.style.color = "var(--text-muted)";
           td.style.textAlign = "center";
           td.textContent = student.errors.length === 0
@@ -1315,7 +1352,18 @@
           const tdReason = document.createElement("td");
           tdReason.textContent = getFirstSentence(err.why);
 
-          tr.append(tdNum, tdGroup, tdWrong, tdFix, tdReason);
+          // Ô "Chốt": lỗi giáo viên đồng ý, sẽ được ghi vào Google Docs
+          const tdConfirm = document.createElement("td");
+          tdConfirm.className = "confirm-cell";
+          const confirmBox = document.createElement("input");
+          confirmBox.type = "checkbox";
+          confirmBox.checked = !!err.confirmed;
+          confirmBox.setAttribute("aria-label", `Chốt lỗi ${err.id}`);
+          confirmBox.addEventListener("click", (e) => e.stopPropagation());
+          confirmBox.addEventListener("change", () => setErrorConfirmed(err, confirmBox.checked));
+          tdConfirm.appendChild(confirmBox);
+
+          tr.append(tdNum, tdGroup, tdWrong, tdFix, tdReason, tdConfirm);
           errorTableBodyEl.appendChild(tr);
         });
       }
@@ -1413,6 +1461,18 @@
         renderEssay(student);
         renderDetailPanel(student);
         renderTable(student);
+        renderDocsWriteBar(student);
+      }
+
+      /* Chốt / bỏ chốt 1 lỗi rồi vẽ lại các phần liên quan */
+      function setErrorConfirmed(err, value) {
+        err.confirmed = !!value;
+        const student = getActiveStudent();
+        renderEssay(student);
+        renderDetailPanel(student);
+        renderTable(student);
+        renderDocsWriteBar(student);
+        saveClassSession();
       }
 
       function renderActiveStudent() {
@@ -1461,6 +1521,21 @@
           renderLevel();
           saveClassSession();
         });
+      });
+
+      detailConfirmBtn.addEventListener("click", () => {
+        const student = getActiveStudent();
+        const err = student && student.errors.find((e) => e.id === state.selectedErrorId);
+        if (err) setErrorConfirmed(err, !err.confirmed);
+      });
+
+      document.getElementById("confirm-all-btn").addEventListener("click", () => {
+        const student = getActiveStudent();
+        if (!student || !student.errors.length) return;
+        const visible = getVisibleErrors(student);
+        const allOn = visible.every((e) => e.confirmed);
+        visible.forEach((e) => { e.confirmed = !allOn; });
+        setErrorConfirmed(visible[0], !allOn);
       });
 
       prevErrBtn.addEventListener("click", () => {
@@ -1984,6 +2059,25 @@
         return String(text || "").trim().split(/\s+/).filter(Boolean).length;
       }
 
+      /* Nhận các cột của bảng bài làm từ dòng tiêu đề (dùng chung cho lấy bài và ghi lỗi vào Docs).
+       * Trả về null nếu dòng này không phải tiêu đề (VD dòng đã có bài viết). */
+      function detectDocColumns(cellTexts) {
+        const texts = cellTexts.map((t) => String(t || "").normalize("NFC").toLowerCase().trim());
+        if (countWords(texts.join(" ")) >= 15) return null;
+        const used = new Set();
+        const find = (re) => {
+          const idx = texts.findIndex((t, i) => !used.has(i) && re.test(t));
+          if (idx !== -1) used.add(idx);
+          return idx;
+        };
+        const stt = find(/^(stt|tt|no\.?|#|số)$/);
+        const name = find(/tên|name|học sinh|student/);
+        const status = find(/xong|done|trạng thái|status|đã nộp/);
+        const essay = find(/bài|essay|answer|writing|reply|email|letter|story/);
+        if (name === -1 || (essay === -1 && status === -1)) return null;
+        return { stt, name, status, essay };
+      }
+
       function parseGoogleDocHtml(html) {
         const doc = new DOMParser().parseFromString(html, "text/html");
         // Docs đặt style trong class CSS → gom lại để biết chữ nào có màu / gạch ngang
@@ -2056,22 +2150,7 @@
         /* Mẫu Docs chuẩn: bảng có dòng tiêu đề "STT | Tên học sinh | Xong? | Bài làm".
          * Nhận cột theo tên tiêu đề; Docs cũ (VD "Names | Reply emails") vẫn đọc được. */
         const lower = (t) => String(t || "").normalize("NFC").toLowerCase().trim();
-        const readHeader = (cells) => {
-          const texts = cells.map((c) => lower(cellText(c)));
-          if (countWords(texts.join(" ")) >= 15) return null; // dòng có bài viết, không phải tiêu đề
-          const used = new Set();
-          const find = (re) => {
-            const idx = texts.findIndex((t, i) => !used.has(i) && re.test(t));
-            if (idx !== -1) used.add(idx);
-            return idx;
-          };
-          const stt = find(/^(stt|tt|no\.?|#|số)$/);
-          const name = find(/tên|name|học sinh|student/);
-          const status = find(/xong|done|trạng thái|status|đã nộp/);
-          const essay = find(/bài|essay|answer|writing|reply|email|letter|story/);
-          if (name === -1 || (essay === -1 && status === -1)) return null;
-          return { stt, name, status, essay };
-        };
+        const readHeader = (cells) => detectDocColumns(cells.map((c) => cellText(c)));
         // Ô "Xong?": học sinh gõ x / Xong / Done (hoặc chọn "Xong" trong menu thả xuống) khi viết xong
         const isDoneMark = (t) =>
           /^(x|✓|✔|☑|✅|xong|done|rồi|ok|oke|okay|yes|có|đã xong|finished|đã nộp|nộp)(?![\p{L}\p{N}])/u.test(lower(t));
@@ -2508,6 +2587,357 @@
         if (counts.missing) bits.push(`chưa nộp ${counts.missing}`);
         classRosterCountEl.textContent = bits.join(" · ");
       }
+
+      /* -----------------------------
+       * Ghi lỗi đã chốt vào Google Docs
+       * Google không cho ứng dụng tạo "Đề xuất" (Thay thế/Thêm), nên ghi theo kiểu giáo viên sửa tay:
+       * chữ sai bị gạch ngang + chữ sửa màu đỏ ngay sau. Lần "Lấy bài" sau, trang bỏ chữ màu và giữ
+       * chữ gạch ngang → vẫn đọc đúng bài gốc của học sinh, bài không bị coi là "đã sửa".
+       * Cần: Google Client ID (cài 1 lần, xem README) + đăng nhập Gmail có quyền sửa Docs.
+       * ----------------------------- */
+      const STORAGE_KEY_GDOCS_CLIENT = "cham_writing_google_client_id";
+      const STORAGE_KEY_GDOCS_REASON = "cham_writing_docs_with_reason";
+      const GDOCS_SCOPE = "https://www.googleapis.com/auth/documents";
+      const FIX_COLOR = { red: 0.851, green: 0.188, blue: 0.149 };   // #D93026 chữ sửa
+      const NOTE_COLOR = { red: 0.706, green: 0.137, blue: 0.094 };  // #B42318 ghi chú lý do
+
+      const gdocsClientInput = document.getElementById("gdocs-client-id-input");
+      const gdocsStatusEl = document.getElementById("gdocs-status");
+      const docsWriteBtn = document.getElementById("docs-write-btn");
+      const docsWithReasonInput = document.getElementById("docs-with-reason");
+      const docsWriteNoteEl = document.getElementById("docs-write-note");
+      const confirmAllBtn = document.getElementById("confirm-all-btn");
+
+      let gdocsToken = { value: "", exp: 0 };
+      let gisLoading = null;
+      let gdocsBusy = false;
+
+      function loadGoogleIdentity() {
+        if (window.google && window.google.accounts && window.google.accounts.oauth2) return Promise.resolve();
+        if (!gisLoading) {
+          gisLoading = new Promise((resolve, reject) => {
+            const sc = document.createElement("script");
+            sc.src = "https://accounts.google.com/gsi/client";
+            sc.async = true;
+            sc.onload = () => resolve();
+            sc.onerror = () => {
+              gisLoading = null;
+              reject(new Error("Không tải được phần đăng nhập Google. Kiểm tra mạng rồi thử lại."));
+            };
+            document.head.appendChild(sc);
+          });
+        }
+        return gisLoading;
+      }
+
+      function updateGdocsStatus() {
+        const id = gdocsClientInput.value.trim();
+        const signedIn = gdocsToken.value && Date.now() < gdocsToken.exp;
+        gdocsStatusEl.textContent = !id ? "Chưa cài đặt" : signedIn ? "Đã đăng nhập" : "Đã cài đặt";
+        gdocsStatusEl.classList.toggle("is-ready", !!id);
+      }
+
+      /* Lấy quyền sửa Docs. Phải gọi ngay khi giáo viên bấm nút (trước mọi await),
+       * vì trình duyệt chỉ cho mở cửa sổ đăng nhập Google từ một cú bấm. */
+      function requestGoogleToken() {
+        if (gdocsToken.value && Date.now() < gdocsToken.exp - 60000) return Promise.resolve(gdocsToken.value);
+        const clientId = gdocsClientInput.value.trim();
+        if (!clientId) {
+          document.getElementById("gdocs-settings-box").open = true;
+          return Promise.reject(new Error("Chưa cài đặt \"Ghi vào Google Docs\": dán Google Client ID ở mục bên trái (làm 1 lần theo hướng dẫn)."));
+        }
+        if (location.protocol === "file:") {
+          return Promise.reject(new Error("Ghi vào Docs chỉ chạy khi mở trang bằng link GitHub Pages (https://…github.io/…), không chạy khi mở file bằng bấm đúp."));
+        }
+        const oauth = window.google && window.google.accounts && window.google.accounts.oauth2;
+        if (!oauth) {
+          loadGoogleIdentity().catch(() => {});
+          return Promise.reject(new Error("Phần đăng nhập Google đang tải. Đợi 1–2 giây rồi bấm lại."));
+        }
+        return new Promise((resolve, reject) => {
+          const client = oauth.initTokenClient({
+            client_id: clientId,
+            scope: GDOCS_SCOPE,
+            callback: (resp) => {
+              if (!resp || resp.error) {
+                reject(new Error(resp && resp.error === "access_denied"
+                  ? "Bạn chưa cho phép trang sửa Google Docs."
+                  : `Đăng nhập Google lỗi${resp && resp.error ? ` (${resp.error})` : ""}.`));
+                return;
+              }
+              if (oauth.hasGrantedAllScopes && !oauth.hasGrantedAllScopes(resp, GDOCS_SCOPE)) {
+                reject(new Error("Cần tích ô cho phép \"xem, sửa… tài liệu Google Docs\" khi đăng nhập. Bấm lại và tích ô đó."));
+                return;
+              }
+              gdocsToken = { value: resp.access_token, exp: Date.now() + (Number(resp.expires_in) || 3600) * 1000 };
+              updateGdocsStatus();
+              resolve(resp.access_token);
+            },
+            error_callback: (e) => reject(new Error(e && e.type === "popup_closed"
+              ? "Bạn đã đóng cửa sổ đăng nhập Google."
+              : "Trình duyệt chặn cửa sổ đăng nhập Google. Cho phép cửa sổ bật lên (popup) cho trang này rồi bấm lại."))
+          });
+          client.requestAccessToken();
+        });
+      }
+
+      async function docsApi(path, token, options = {}) {
+        const res = await fetch(`https://docs.googleapis.com/v1/documents/${path}`, {
+          method: options.method || "GET",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: options.body
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) return data;
+        const msg = (data.error && data.error.message) || `HTTP ${res.status}`;
+        if (res.status === 401) {
+          gdocsToken = { value: "", exp: 0 };
+          updateGdocsStatus();
+          throw new Error("Phiên đăng nhập Google đã hết hạn. Bấm lại để đăng nhập.");
+        }
+        if (res.status === 403 && /has not been used|disabled|SERVICE_DISABLED/i.test(msg)) {
+          throw new Error("Chưa bật Google Docs API trong Google Cloud (bước 2 trong hướng dẫn cài đặt).");
+        }
+        if (res.status === 403) throw new Error("Gmail đang đăng nhập không có quyền sửa Docs này. Đăng nhập đúng Gmail chủ Docs (hoặc có quyền chỉnh sửa).");
+        if (res.status === 404) throw new Error("Không tìm thấy Docs. Kiểm tra lại link Docs của lớp.");
+        throw new Error(`Google Docs báo lỗi: ${msg}`);
+      }
+
+      function findDocTab(tabs, tabId) {
+        for (const tab of tabs || []) {
+          if (!tabId || (tab.tabProperties && tab.tabProperties.tabId === tabId)) return tab;
+          const child = findDocTab(tab.childTabs, tabId);
+          if (child) return child;
+        }
+        return null;
+      }
+
+      /* Các đoạn chữ trong 1 ô bảng (Docs API), kèm vị trí và kiểu chữ */
+      function docCellRuns(cell) {
+        const runs = [];
+        (cell.content || []).forEach((block) => {
+          const elements = (block.paragraph && block.paragraph.elements) || [];
+          elements.forEach((el) => {
+            if (!el.textRun) return;
+            const ts = el.textRun.textStyle || {};
+            const c = ts.foregroundColor && ts.foregroundColor.color && ts.foregroundColor.color.rgbColor;
+            const rgb = c ? [c.red || 0, c.green || 0, c.blue || 0] : null;
+            const colored = !!rgb && !ts.link && Math.max(...rgb) - Math.min(...rgb) > 60 / 255;
+            runs.push({ text: el.textRun.content || "", start: el.startIndex, strike: !!ts.strikethrough, colored });
+          });
+        });
+        return runs;
+      }
+
+      function docCellText(cell) {
+        return docCellRuns(cell).map((r) => r.text).join("");
+      }
+
+      /* Tìm ô bài làm của học sinh trong bảng (theo tên ở cột Tên học sinh) */
+      function findStudentEssayCells(body, studentName) {
+        const key = nameKey(studentName);
+        for (const block of (body && body.content) || []) {
+          const rows = block.table && block.table.tableRows;
+          if (!rows || !rows.length) continue;
+          const header = detectDocColumns(rows[0].tableCells.map(docCellText));
+          for (let r = header ? 1 : 0; r < rows.length; r++) {
+            const cells = rows[r].tableCells || [];
+            const nameIdx = header ? header.name : 0;
+            if (!cells[nameIdx] || nameKey(docCellText(cells[nameIdx])) !== key) continue;
+            if (!header) return cells.slice(1);
+            if (header.essay !== -1) return cells[header.essay] ? [cells[header.essay]] : null;
+            return cells.filter((c, i) => i !== header.stt && i !== header.name && i !== header.status);
+          }
+        }
+        return null;
+      }
+
+      // Dấu nháy cong/thẳng, dấu cách đặc biệt coi như nhau khi dò chữ (thay từng ký tự → giữ nguyên vị trí)
+      const normalizeChar = (ch) =>
+        ch === "\u2019" || ch === "\u2018" ? "'" : ch === "\u201c" || ch === "\u201d" ? "\"" : ch === "\u00a0" || ch === "\u000b" ? " " : ch;
+      const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      /* Lập danh sách lệnh sửa cho Docs API. Làm từ cuối ô lên đầu để vị trí phía trước không bị xê dịch. */
+      function buildDocsEditPlan(essayCells, errors, withReason, tabId) {
+        // Bài gốc như trang đã chấm: bỏ chữ màu giáo viên chèn, giữ chữ gạch ngang
+        const chars = [], idx = [], strike = [];
+        essayCells.forEach((cell) => {
+          docCellRuns(cell).forEach((run) => {
+            if (run.colored) return;
+            for (let i = 0; i < run.text.length; i++) {
+              chars.push(normalizeChar(run.text[i]));
+              idx.push(run.start + i);
+              strike.push(run.strike);
+            }
+          });
+        });
+        const view = chars.join("");
+        const withTab = (obj) => (tabId ? Object.assign(obj, { tabId }) : obj);
+
+        const ops = []; // { at, requests[] }
+        const applied = [], notFound = [], already = [];
+        let cursor = 0;
+        errors.slice().sort((a, b) => a.id - b.id).forEach((err) => {
+          const needle = Array.from(String(err.wrong || "")).map(normalizeChar).join("").trim();
+          if (!needle) { notFound.push(err); return; }
+          const re = new RegExp(needle.split(/\s+/).map(escapeRe).join("\\s+"), "g");
+          re.lastIndex = cursor;
+          let m = re.exec(view);
+          if (!m && cursor > 0) { re.lastIndex = 0; m = re.exec(view); }
+          if (!m) { notFound.push(err); return; }
+          const s = m.index, e = m.index + m[0].length;
+          cursor = e;
+          if (strike.slice(s, e).every(Boolean)) { already.push(err); return; } // đã gạch trong Docs rồi
+          const start = idx[s], end = idx[e - 1] + 1;
+          const requests = [];
+          const fix = String(err.fix || "").trim();
+          if (fix && fix !== needle) {
+            const text = " " + fix; // dấu cách cũng tô đỏ → lần lấy bài sau bỏ trọn phần chèn
+            requests.push(
+              { insertText: { location: withTab({ index: end }), text } },
+              {
+                updateTextStyle: {
+                  range: withTab({ startIndex: end, endIndex: end + text.length }),
+                  textStyle: { foregroundColor: { color: { rgbColor: FIX_COLOR } }, strikethrough: false },
+                  fields: "foregroundColor,strikethrough,link"
+                }
+              }
+            );
+          }
+          requests.push({
+            updateTextStyle: { range: withTab({ startIndex: start, endIndex: end }), textStyle: { strikethrough: true }, fields: "strikethrough" }
+          });
+          ops.push({ at: start, requests });
+          applied.push(err);
+        });
+
+        // Lý do sai: thêm cuối ô bài làm, chữ màu nghiêng (trang chấm bỏ qua chữ màu khi lấy bài)
+        if (withReason && applied.length) {
+          const lastCell = essayCells[essayCells.length - 1];
+          const paragraphs = (lastCell.content || []).filter((b) => b.paragraph);
+          const cellEnd = paragraphs.length ? paragraphs[paragraphs.length - 1].endIndex - 1 : null;
+          if (cellEnd !== null) {
+            const lines = applied.map((err) => `${err.id}. ${err.wrong} → ${err.fix || "(bỏ)"}: ${err.why}`);
+            const text = "\nGhi chú sửa:\n" + lines.join("\n");
+            ops.push({
+              at: Number.MAX_SAFE_INTEGER,
+              requests: [
+                { insertText: { location: withTab({ index: cellEnd }), text } },
+                {
+                  updateTextStyle: {
+                    range: withTab({ startIndex: cellEnd, endIndex: cellEnd + text.length }),
+                    textStyle: { foregroundColor: { color: { rgbColor: NOTE_COLOR } }, italic: true, strikethrough: false },
+                    fields: "foregroundColor,italic,strikethrough,link"
+                  }
+                }
+              ]
+            });
+          }
+        }
+        ops.sort((a, b) => b.at - a.at);
+        return { requests: ops.flatMap((op) => op.requests), applied, notFound, already };
+      }
+
+      function setDocsNote(text, isError, linkUrl) {
+        docsWriteNoteEl.textContent = text;
+        docsWriteNoteEl.style.color = isError ? "var(--badge-no-text)" : "";
+        if (linkUrl) {
+          const a = document.createElement("a");
+          a.className = "ai-link";
+          a.href = linkUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = " Mở Docs";
+          docsWriteNoteEl.appendChild(a);
+        }
+      }
+
+      function renderDocsWriteBar(student) {
+        const errors = (student && student.errors) || [];
+        const confirmed = errors.filter((e) => e.confirmed);
+        const pending = confirmed.filter((e) => !e.sentToDoc);
+        const sent = errors.filter((e) => e.sentToDoc).length;
+        docsWriteBtn.disabled = gdocsBusy || pending.length === 0;
+        docsWriteBtn.textContent = gdocsBusy
+          ? "Đang ghi vào Docs..."
+          : pending.length ? `Ghi ${pending.length} lỗi đã chốt vào Google Docs` : "Ghi lỗi đã chốt vào Google Docs";
+        const visible = student ? getVisibleErrors(student) : [];
+        confirmAllBtn.textContent = visible.length && visible.every((e) => e.confirmed) ? "Bỏ chốt tất cả" : "Chốt tất cả";
+        confirmAllBtn.disabled = visible.length === 0;
+        if (gdocsBusy) return;
+        if (!state.docId) setDocsNote("Chỉ ghi được với bài lấy từ link Google Docs.", false);
+        else if (!gdocsClientInput.value.trim()) setDocsNote("Cần cài đặt \"Ghi vào Google Docs\" 1 lần (mục bên trái).", false);
+        else setDocsNote(`Đã chốt ${confirmed.length}/${errors.length} lỗi${sent ? ` · đã ghi vào Docs ${sent}` : ""}. Lỗi ghi vào Docs: chữ sai gạch ngang, chữ sửa màu đỏ.`, false);
+      }
+
+      docsWriteBtn.addEventListener("click", async () => {
+        const student = getActiveStudent();
+        if (!student || gdocsBusy) return;
+        const pending = student.errors.filter((e) => e.confirmed && !e.sentToDoc);
+        if (!pending.length) return;
+        if (!state.docId) { setDocsNote("Chỉ ghi được với bài lấy từ link Google Docs.", true); return; }
+        let token;
+        try {
+          token = await requestGoogleToken(); // gọi ngay trong cú bấm để mở được cửa sổ đăng nhập
+        } catch (err) {
+          setDocsNote(err.message, true);
+          return;
+        }
+        gdocsBusy = true;
+        renderDocsWriteBar(student);
+        setDocsNote("Đang ghi vào Google Docs...", false);
+        const docId = state.docId;
+        const tabId = (String(docUrlInput.value).match(/[?&]tab=(t\.[\w.-]+)/) || [])[1];
+        const docLink = `https://docs.google.com/document/d/${docId}/edit${tabId ? `?tab=${tabId}` : ""}`;
+        let message = "", isError = false;
+        try {
+          const doc = await docsApi(`${docId}?includeTabsContent=true`, token);
+          const tab = findDocTab(doc.tabs, tabId);
+          if (!tab || !tab.documentTab) throw new Error("Không tìm thấy tab của lớp trong Docs. Kiểm tra lại link (có ?tab=…).");
+          const cells = findStudentEssayCells(tab.documentTab.body, student.name);
+          if (!cells || !cells.length) {
+            throw new Error(`Không thấy dòng của "${student.name}" trong bảng Docs. Tên trên trang và trong Docs phải giống nhau.`);
+          }
+          const plan = buildDocsEditPlan(cells, pending, docsWithReasonInput.checked, tab.tabProperties && tab.tabProperties.tabId);
+          if (plan.requests.length) {
+            await docsApi(`${docId}:batchUpdate`, token, { method: "POST", body: JSON.stringify({ requests: plan.requests }) });
+          }
+          plan.applied.concat(plan.already).forEach((e) => { e.sentToDoc = true; });
+          message = `Đã ghi ${plan.applied.length} lỗi vào Docs của ${student.name}.` +
+            (plan.already.length ? ` ${plan.already.length} lỗi đã có sẵn trong Docs.` : "") +
+            (plan.notFound.length
+              ? ` Không tìm thấy trong Docs: ${plan.notFound.map((e) => `"${e.wrong}"`).join(", ")} (bài có thể đã bị học sinh sửa).`
+              : "");
+          isError = plan.notFound.length > 0;
+        } catch (err) {
+          message = err.message || "Không ghi được vào Google Docs.";
+          isError = true;
+        } finally {
+          gdocsBusy = false;
+          saveClassSession();
+          const st = getActiveStudent();
+          renderEssay(st);
+          renderTable(st);
+          renderDocsWriteBar(st);
+          setDocsNote(message, isError, isError ? null : docLink);
+        }
+      });
+
+      gdocsClientInput.value = storageGet(STORAGE_KEY_GDOCS_CLIENT);
+      docsWithReasonInput.checked = storageGet(STORAGE_KEY_GDOCS_REASON) === "1";
+      gdocsClientInput.addEventListener("input", () => {
+        storageSet(STORAGE_KEY_GDOCS_CLIENT, gdocsClientInput.value.trim());
+        gdocsToken = { value: "", exp: 0 };
+        updateGdocsStatus();
+        renderDocsWriteBar(getActiveStudent());
+        if (gdocsClientInput.value.trim()) loadGoogleIdentity().catch(() => {});
+      });
+      docsWithReasonInput.addEventListener("change", () => {
+        storageSet(STORAGE_KEY_GDOCS_REASON, docsWithReasonInput.checked ? "1" : "");
+      });
+      updateGdocsStatus();
+      // Tải sẵn phần đăng nhập Google để cú bấm "Ghi" mở được cửa sổ đăng nhập ngay
+      if (gdocsClientInput.value.trim() && location.protocol !== "file:") loadGoogleIdentity().catch(() => {});
 
       /* Mở trang: nếu lần trước đang chấm dở 1 lớp từ Docs thì điền sẵn link và nhắc */
       (function hintLastClass() {
