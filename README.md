@@ -43,41 +43,6 @@ File mẫu: [`mau-docs/mau-bai-viet-lop-cham-writing.docx`](mau-docs/mau-bai-vie
 
 Docs cũ không theo mẫu (bảng Tên | Bài) vẫn dùng được như trước.
 
-## Ghi lỗi đã chốt vào Google Docs
-
-Chấm xong, cô chọn những lỗi đồng ý rồi bấm một nút là trang ghi thẳng vào ô bài của học sinh trong Docs:
-
-> I like ~~walking~~ **walk** with my dog. *(chữ sai gạch ngang, chữ sửa màu đỏ)*
-
-**Cách dùng:**
-1. Ở **Bảng tổng hợp lỗi**, tích ô **Chốt** ở lỗi muốn gửi (hoặc bấm nút **Chốt** trong khung chi tiết lỗi, hoặc **Chốt tất cả**). Lỗi đã chốt có dấu ✓ trên bài.
-2. Muốn ghi kèm lý do thì bật **Kèm lý do**: cuối ô bài có thêm mục "Ghi chú sửa" liệt kê từng lỗi và lý do.
-3. Bấm **Ghi … lỗi đã chốt vào Google Docs**. Lần đầu trang mở cửa sổ đăng nhập Google: chọn Gmail có quyền sửa Docs của lớp.
-
-**Cần biết:**
-- Google không cho trang web tạo "Đề xuất" (Thay thế / Thêm) như khi cô sửa tay, nên trang ghi theo kiểu gạch ngang + chữ đỏ.
-- Trang tìm dòng của học sinh theo **tên**: tên trên trang và trong Docs phải giống nhau.
-- Lỗi đã ghi thì không ghi lại lần nữa. Chốt thêm lỗi rồi bấm Ghi thì chỉ lỗi mới được ghi.
-- Lần "Lấy bài" sau, trang tự bỏ chữ đỏ và giữ chữ gạch ngang, nên vẫn đọc đúng bài gốc (bài không bị tính là "đã sửa"). Khi học sinh tự sửa lại bài, trang sẽ nhận ra "đã sửa · chờ chấm".
-- Chỉ chạy khi mở trang bằng link GitHub Pages (hoặc localhost), không chạy khi mở file bằng bấm đúp.
-
-### Cài đặt 1 lần (khoảng 10 phút, dùng Gmail cá nhân)
-
-1. Vào [Google Cloud Console](https://console.cloud.google.com/), đăng nhập **Gmail cá nhân** → tạo dự án mới, đặt tên VD "Cham Writing".
-2. Bật Google Docs API: **APIs & Services → Library** → tìm **Google Docs API** → **Enable**.
-3. Màn hình xin quyền: **Google Auth Platform** (hoặc **OAuth consent screen**) → **Get started**:
-   - App name: "Chấm Writing", email hỗ trợ: Gmail của mình.
-   - Audience: **External**.
-   - Ở mục **Audience → Test users**, thêm **Gmail sẽ đăng nhập để ghi vào Docs** (Gmail của cô, và Gmail của người khác nếu họ cũng ghi).
-4. Tạo Client ID: **Clients** (hoặc **Credentials → Create credentials → OAuth client ID**) → loại **Web application** → mục **Authorized JavaScript origins** thêm:
-   - `https://haniichan95.github.io`
-   - `http://localhost:5198` (chỉ khi chạy thử trên máy)
-
-   Bấm **Create** rồi chép **Client ID** (dạng `….apps.googleusercontent.com`).
-5. Mở trang Chấm Writing → mục **Ghi vào Google Docs** (cột bên trái) → dán Client ID. Trang tự nhớ trên trình duyệt đó.
-
-Lần đầu đăng nhập, Google báo **"Google chưa xác minh ứng dụng này"**: đây là ứng dụng của chính mình ở chế độ thử, bấm **Tiếp tục**, rồi tích ô cho phép sửa tài liệu Google Docs. Mỗi lần đăng nhập dùng được khoảng 1 giờ; hết giờ trang tự hỏi lại. Client ID không phải mật khẩu, dán lên trang được.
-
 ## Để lấy bài từ link Google Docs
 
 1. Mở trang bằng link **https://haniichan95.github.io/cham-writing-ai/**. Nếu mở file `index.html` bằng cách bấm đúp, Google sẽ không cho lấy bài từ Docs.
@@ -98,4 +63,3 @@ Lần đầu đăng nhập, Google báo **"Google chưa xác minh ứng dụng n
 1. Lấy bài từ **link Google Docs**: không cần chụp ảnh, và AI giữ đúng lỗi của học sinh (đọc ảnh thì AI hay tự sửa mất lỗi).
 2. **Chấm theo đợt**, **bảng Tình trạng lớp** và **nhớ lớp đang chấm** (xem phần "Chấm theo đợt" ở trên).
 3. **Mẫu Google Docs cho lớp** với cột "Xong?" và ô tích "Chấm" để không chấm bài viết dở (xem phần "Mẫu Google Docs cho lớp").
-4. **Ghi lỗi đã chốt vào Google Docs**: chọn lỗi đồng ý, bấm một nút là lỗi được ghi vào ô bài của học sinh (xem phần "Ghi lỗi đã chốt vào Google Docs").
