@@ -23,6 +23,26 @@ Trang web giúp giáo viên chấm bài Writing tiếng Anh theo giáo trình Ca
 - **Trang nhớ lớp đang chấm.** Lỡ đóng tab thì mở lại trang, bấm **"Lấy bài"** là các bài đã chấm hiện lại, không tốn lượt AI chấm lại. Trang chỉ nhớ trên trình duyệt đang dùng.
 - Qua lớp mới thì bấm **"Reset lớp mới"**.
 
+## Mẫu Google Docs cho lớp (nên dùng)
+
+File mẫu: [`mau-docs/mau-bai-viet-lop-cham-writing.docx`](mau-docs/mau-bai-viet-lop-cham-writing.docx). Mẫu có phần **ĐỀ BÀI** (Level, số từ, chữ đề) và bảng **STT | Tên học sinh | Xong? | Bài làm**.
+
+**Cách dùng mẫu:**
+1. Tải file lên Google Drive → mở bằng Google Tài liệu → **Tệp → Lưu dưới dạng Google Tài liệu**. Bắt buộc bước này: file .docx để nguyên thì trang không lấy bài được.
+2. **Điền sẵn tên cả lớp** vào cột "Tên học sinh".
+3. Phần ĐỀ BÀI: ghi **Level** (A1 / A2 / B1 / B2), **Số từ**, và **dán chữ đề** (gồm cả khung "Prepare to write"). Có thể chèn thêm ảnh đề cho học sinh xem.
+4. Chia sẻ **"Bất kỳ ai có đường liên kết"** với quyền **Người chỉnh sửa** để học sinh viết.
+5. Mỗi buổi học: nhân bản tab (mỗi buổi 1 tab), dán link của tab đó vào trang.
+
+**Mẫu giúp gì khi chấm:**
+- Học sinh viết xong thì gõ **Xong** (hoặc x, ok, có) vào cột "Xong?". Trang chỉ tích chọn chấm những bài đã Xong; bài chưa Xong hiện **"Đang viết"** và **không gửi cho AI**, nên không tốn lượt cho bài viết dở.
+- Mỗi bài có ô tích **"Chấm"**: cô tự tích bài muốn chấm (VD bạn quên gõ Xong) hoặc bỏ tích bài để lại sau. Lần "Lấy bài" sau không đổi lại lựa chọn của cô.
+- Trang tự lấy **chữ đề** vào mục 03 và tự chọn **Level**. Có chữ đề thì trang không gửi ảnh đề kèm từng bài: AI đọc chữ chính xác hơn, tiêu chí giống nhau cho cả lớp và chấm rẻ hơn.
+- Tên điền sẵn nên trang luôn nhận đúng từng bạn qua các lần "Lấy bài"; bạn chưa viết hiện **"Chưa nộp"**.
+- Nhận xét bằng **Bình luận** của Google Docs, không sửa thẳng hay tô màu vào bài, để bài gốc giữ nguyên lỗi cho AI chấm.
+
+Docs cũ không theo mẫu (bảng Tên | Bài) vẫn dùng được như trước.
+
 ## Để lấy bài từ link Google Docs
 
 1. Mở trang bằng link **https://haniichan95.github.io/cham-writing-ai/**. Nếu mở file `index.html` bằng cách bấm đúp, Google sẽ không cho lấy bài từ Docs.
@@ -42,3 +62,4 @@ Trang web giúp giáo viên chấm bài Writing tiếng Anh theo giáo trình Ca
 **Chức năng mới**
 1. Lấy bài từ **link Google Docs**: không cần chụp ảnh, và AI giữ đúng lỗi của học sinh (đọc ảnh thì AI hay tự sửa mất lỗi).
 2. **Chấm theo đợt**, **bảng Tình trạng lớp** và **nhớ lớp đang chấm** (xem phần "Chấm theo đợt" ở trên).
+3. **Mẫu Google Docs cho lớp** với cột "Xong?" và ô tích "Chấm" để không chấm bài viết dở (xem phần "Mẫu Google Docs cho lớp").
