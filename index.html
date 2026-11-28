@@ -2497,7 +2497,10 @@
               (promptFromDoc && result.prompt.hasTask ? " Đã lấy đề dạng chữ." : "") +
               (result.prompt.level ? ` Level ${result.prompt.level}.` : "") +
               (promptAdded ? ` Đã thêm ${promptAdded} ảnh đề.` : "") +
-              (waiting ? ` Bấm "Chấm bài" để chấm ${waiting} bài cần chấm.` : " Không có bài mới cần chấm."),
+              (waiting ? ` Bấm "Chấm bài" để chấm ${waiting} bài cần chấm.` : " Không có bài mới cần chấm.") +
+              (/[?&]rtpof=true/.test(url)
+                ? " Lưu ý: link này là file Word (.docx) — lấy bài được nhưng KHÔNG ghi lỗi vào Docs được. Muốn ghi thì mở file → Tệp → Lưu dưới dạng Google Tài liệu và dùng link bản mới."
+                : ""),
             false
           );
         } catch (err) {
@@ -2690,6 +2693,9 @@
         const data = await res.json().catch(() => ({}));
         if (res.ok) return data;
         const msg = (data.error && data.error.message) || `HTTP ${res.status}`;
+        if (/office file/i.test(msg)) {
+          throw new Error("Docs này vẫn là file Word (.docx) nên Google không cho ghi. Mở file → Tệp → Lưu dưới dạng Google Tài liệu, rồi dùng link của bản mới (bấm Reset lớp mới, dán link mới, Lấy bài).");
+        }
         if (res.status === 401) {
           gdocsToken = { value: "", exp: 0 };
           updateGdocsStatus();
