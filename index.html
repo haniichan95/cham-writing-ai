@@ -256,6 +256,14 @@
     .doc-import-row { display: flex; gap: 6px; }
     .doc-import-row .text-input { flex: 1; min-width: 0; }
     .doc-import-row .btn-secondary { white-space: nowrap; }
+    .class-roster { border: 1px solid var(--border); border-radius: 9px; background: var(--surface-subtle); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .class-roster-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+    .class-roster-count { color: var(--text-muted); font-weight: 500; text-align: right; }
+    .class-roster-list { display: flex; flex-direction: column; gap: 1px; max-height: 240px; overflow-y: auto; }
+    .roster-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 12.5px; padding: 5px 6px; border-radius: 6px; cursor: pointer; text-align: left; }
+    .roster-item:hover { background: var(--surface-hover); }
+    .roster-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+    .roster-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-add-student:hover { background: var(--accent-tint); border-color: var(--accent); }
     .form-actions-row { display: flex; gap: 7px; align-items: stretch; }
     .form-actions-row .btn-primary { flex: 1; }
@@ -582,7 +590,14 @@
           <input id="doc-url-input" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="Dán link Google Docs (bảng Tên | Bài)" aria-label="Link Google Docs chứa bài làm" />
           <button type="button" class="btn-secondary" id="doc-import-btn">Lấy bài</button>
         </div>
-        <p class="field-note">Docs cần chia sẻ “Bất kỳ ai có đường liên kết”. Mỗi dòng trong bảng thành 1 bài; ảnh đề ở đầu Docs tự vào mục 03.</p>
+        <p class="field-note">Docs cần chia sẻ “Bất kỳ ai có đường liên kết”. Mỗi dòng trong bảng thành 1 bài; ảnh đề ở đầu Docs tự vào mục 03. Bạn nào nộp sau thì bấm “Lấy bài” lại: chỉ bài mới hoặc bài vừa sửa phải chấm.</p>
+        <div class="class-roster is-hidden" id="class-roster" aria-label="Tình trạng lớp">
+          <div class="class-roster-head">
+            <span>Tình trạng lớp</span>
+            <span class="class-roster-count" id="class-roster-count" aria-live="polite"></span>
+          </div>
+          <div class="class-roster-list" id="class-roster-list"></div>
+        </div>
         <div class="file-list" id="work-file-list"></div>
         <div class="dropzone" id="work-dropzone" tabindex="0" aria-label="Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm">
           <span class="dropzone-main">Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm</span>
@@ -768,6 +783,8 @@
       const STORAGE_KEY_API = "cham_writing_gemini_api_key";
       const STORAGE_KEY_MODEL = "cham_writing_gemini_model";
       const STORAGE_KEY_CUSTOM_MODEL = "cham_writing_gemini_custom_model";
+      const STORAGE_KEY_LAST_DOC = "cham_writing_last_doc_url";
+      const STORAGE_PREFIX_CLASS = "cham_writing_class_"; // + id Docs → lớp đang chấm dở
 
       const LEVEL_INFO = {
         A1: {
@@ -858,7 +875,9 @@
         isGrading: false,
         promptUploads: [],
         workUploads: [],
-        textStudents: []
+        textStudents: [],
+        docId: null,    // Docs đang chấm (để lưu/mở lại lớp)
+        docRoster: []   // tên học sinh theo thứ tự trong Docs, kể cả bạn chưa nộp
       };
 
       /* -----------------------------
@@ -1438,6 +1457,7 @@
         btn.addEventListener("click", () => {
           state.level = btn.dataset.level;
           renderLevel();
+          saveClassSession();
         });
       });
 
@@ -1553,6 +1573,12 @@
         state.activeStudentIndex = 0;
         state.activeGroup = null;
         state.selectedErrorId = null;
+        if (state.docId) deleteClassSession(state.docId);
+        state.docId = null;
+        state.docRoster = [];
+        docUrlInput.value = "";
+        storageSet(STORAGE_KEY_LAST_DOC, "");
+        renderRoster();
         renderModeHeader();
         renderActiveStudent();
         showFeedback("Đã xóa dữ liệu lớp cũ. Bạn có thể nhập đề và bài làm cho lớp mới.", false);
@@ -1734,6 +1760,7 @@
             entry.statusSpan.textContent = "Đã sửa · chờ chấm";
             entry.statusSpan.classList.remove("is-done");
           }
+          renderRoster();
         };
         nameInput.addEventListener("input", markDirty);
         textInput.addEventListener("input", markDirty);
@@ -1742,6 +1769,7 @@
           const idx = state.textStudents.indexOf(entry);
           if (idx !== -1) state.textStudents.splice(idx, 1);
           card.remove();
+          renderRoster();
         });
 
         card.append(head, textInput);
@@ -2004,6 +2032,7 @@
 
         const students = [];
         const skipped = [];
+        const order = []; // tên theo thứ tự dòng trong bảng (cả bạn chưa nộp)
         doc.querySelectorAll("table").forEach((table) => {
           if (table.parentElement && table.parentElement.closest("table")) return;
           Array.from(table.rows).forEach((tr, rowIdx) => {
@@ -2017,15 +2046,16 @@
               students[students.length - 1].text += "\n" + text;
               return;
             }
-            if (!n) { if (name) skipped.push(name); return; }
+            if (!n) { if (name) { skipped.push(name); order.push(name); } return; }
             students.push({ name, text });
+            if (name) order.push(name);
           });
         });
         if (!firstTable) { // không có bảng: cả tài liệu là 1 bài
           const text = cellText(doc.body.cloneNode(true));
           if (countWords(text)) students.push({ name: "", text });
         }
-        return { students, skipped, images };
+        return { students, skipped, images, order };
       }
 
       async function fetchGoogleDoc(url) {
@@ -2059,6 +2089,132 @@
         return parsed;
       }
 
+      /* So khớp học sinh theo tên (bỏ hoa/thường, khoảng trắng thừa) để lấy bài nhiều đợt không bị trùng */
+      function nameKey(name) {
+        return String(name || "").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      }
+
+      function findEntryFor(docStudent) {
+        const key = nameKey(docStudent.name);
+        if (key) return state.textStudents.find((t) => nameKey(t.nameInput.value) === key);
+        return state.textStudents.find((t) => t.textInput.value.trim() === docStudent.text.trim());
+      }
+
+      function setEntryStatus(entry, text, done) {
+        entry.statusSpan.textContent = text;
+        entry.statusSpan.classList.toggle("is-done", !!done);
+      }
+
+      /* -----------------------------
+       * Lưu / mở lại lớp đang chấm (theo link Docs, trong localStorage của trình duyệt)
+       * Ảnh đề không lưu: lấy lại từ Docs mỗi lần bấm "Lấy bài".
+       * ----------------------------- */
+      const MAX_SAVED_CLASSES = 8;
+
+      function serializeStudent(student) {
+        return Object.assign({}, student, {
+          tokens: student.tokens.map((t) => (t.type === "text" ? t : { type: "error", errorId: t.error.id }))
+        });
+      }
+
+      function reviveStudent(raw) {
+        const byId = new Map((raw.errors || []).map((e) => [e.id, e]));
+        raw.tokens = (raw.tokens || [])
+          .map((t) => (t.type === "error" ? { type: "error", error: byId.get(t.errorId) } : t))
+          .filter((t) => t.type === "text" || t.error);
+        return raw;
+      }
+
+      function readClassSession(docId) {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_PREFIX_CLASS + docId);
+          return raw ? JSON.parse(raw) : null;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function deleteClassSession(docId) {
+        try { window.localStorage.removeItem(STORAGE_PREFIX_CLASS + docId); } catch (err) { /* bỏ qua */ }
+      }
+
+      function pruneClassSessions() {
+        try {
+          const saved = [];
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i);
+            if (!key || !key.startsWith(STORAGE_PREFIX_CLASS)) continue;
+            let savedAt = 0;
+            try { savedAt = JSON.parse(window.localStorage.getItem(key)).savedAt || 0; } catch (err) { /* hỏng thì xoá trước */ }
+            saved.push({ key, savedAt });
+          }
+          saved.sort((a, b) => b.savedAt - a.savedAt).slice(MAX_SAVED_CLASSES)
+            .forEach((item) => window.localStorage.removeItem(item.key));
+        } catch (err) { /* bỏ qua */ }
+      }
+
+      function saveClassSession() {
+        if (!state.docId) return;
+        const graded = state.students.filter((s) => s.status === "graded");
+        const data = {
+          v: 1,
+          savedAt: Date.now(),
+          docUrl: docUrlInput.value.trim(),
+          level: state.level,
+          promptText: promptTextInput.value,
+          extraNotes: extraNotesInput.value,
+          hadDocImages: state.promptUploads.some((u) => u.fromDoc),
+          roster: state.docRoster,
+          entries: state.textStudents.map((t) => ({
+            name: t.nameInput.value,
+            text: t.textInput.value,
+            graded: t.graded,
+            studentId: t.studentId
+          })),
+          students: graded.map(serializeStudent)
+        };
+        try {
+          window.localStorage.setItem(STORAGE_PREFIX_CLASS + state.docId, JSON.stringify(data));
+          pruneClassSessions();
+        } catch (err) {
+          // Bộ nhớ trình duyệt đầy hoặc bị chặn: vẫn chấm bình thường, chỉ là không nhớ được lớp
+        }
+      }
+
+      /* Mở lại lớp đã lưu. Trả về số bài đã chấm khôi phục được. */
+      function restoreClassSession(docId) {
+        const data = readClassSession(docId);
+        if (!data) return null;
+        state.level = LEVEL_INFO[data.level] ? data.level : state.level;
+        if (data.promptText && data.promptText.trim()) {
+          promptTextInput.value = data.promptText;
+          showPromptTextEditor();
+        }
+        extraNotesInput.value = data.extraNotes || "";
+        state.docRoster = Array.isArray(data.roster) ? data.roster : [];
+        state.students = (data.students || []).map(reviveStudent);
+        const ids = new Set(state.students.map((s) => s.id));
+        (data.entries || []).forEach((e) => {
+          addTextStudentCard(e.name, e.text, { focus: false });
+          const entry = state.textStudents[state.textStudents.length - 1];
+          entry.studentId = ids.has(e.studentId) ? e.studentId : null;
+          entry.graded = !!(e.graded && entry.studentId);
+          if (entry.graded) setEntryStatus(entry, "Đã chấm", true);
+          else if (entry.studentId) setEntryStatus(entry, "Đã sửa · chờ chấm", false);
+        });
+        state.students.forEach((s) => {
+          const n = parseInt(String(s.id).replace(/\D+/g, ""), 10);
+          if (n > studentSeq) studentSeq = n;
+        });
+        state.activeStudentIndex = 0;
+        state.activeGroup = null;
+        const first = getActiveStudent();
+        state.selectedErrorId = first && first.errors.length ? first.errors[0].id : null;
+        renderModeHeader();
+        renderActiveStudent();
+        return { graded: state.students.length, hadDocImages: !!data.hadDocImages };
+      }
+
       async function importFromGoogleDoc() {
         if (state.isGrading) return;
         const url = docUrlInput.value.trim();
@@ -2067,39 +2223,80 @@
           showFeedback("Hãy dán link Google Docs chứa bài làm trước.", true);
           return;
         }
+        const docId = getDocId(url);
+        if (state.docId && docId && docId !== state.docId) {
+          showFeedback("Đang chấm một lớp khác. Bấm \"Reset lớp mới\" trước khi lấy bài từ Docs khác.", true);
+          return;
+        }
         docImportBtn.disabled = true;
         docImportBtn.textContent = "Đang lấy...";
         showFeedback("Đang lấy bài từ Google Docs...", false);
         try {
           const result = await fetchGoogleDoc(url);
-          if (!result.students.length) {
+          if (!result.students.length && !result.skipped.length) {
             throw new Error("Không thấy bài nào trong Docs. Bài cần nằm trong bảng 2 cột Tên | Bài.");
           }
+
+          // Trang vừa mở (chưa có gì) + Docs này đã chấm dở trước đó → mở lại lớp cũ
+          let restored = null;
+          const pageIsEmpty = !state.docId && state.students.length === 0 &&
+            !state.textStudents.some((t) => t.textInput.value.trim());
+          if (pageIsEmpty) restored = restoreClassSession(docId);
+          state.docId = docId;
+          storageSet(STORAGE_KEY_LAST_DOC, url);
+
           // Bỏ các ô bài trống còn sót để danh sách gọn
           state.textStudents
             .filter((t) => !t.graded && !t.textInput.value.trim())
             .forEach((t) => t.removeBtn.click());
-          // Không thêm trùng bài đã có (bấm "Lấy bài" 2 lần)
-          const existing = new Set(state.textStudents.map((t) => t.textInput.value.trim()));
-          const fresh = result.students.filter((st) => !existing.has(st.text.trim()));
-          fresh.forEach((st) => addTextStudentCard(st.name, st.text, { focus: false }));
+
+          // Gộp theo tên: bạn mới → thêm; bài đổi → cập nhật và chờ chấm lại; không đổi → giữ nguyên
+          let added = 0, changed = 0, same = 0;
+          result.students.forEach((st) => {
+            const entry = findEntryFor(st);
+            if (!entry) {
+              addTextStudentCard(st.name, st.text, { focus: false });
+              added += 1;
+              return;
+            }
+            if (entry.textInput.value.trim() === st.text.trim()) {
+              same += 1;
+              return;
+            }
+            entry.textInput.value = st.text;
+            entry.graded = false;
+            setEntryStatus(entry, entry.studentId ? "Nộp lại · chờ chấm" : "Chờ chấm", false);
+            changed += 1;
+          });
+          state.docRoster = result.order.length ? result.order : state.docRoster;
 
           let promptAdded = 0;
-          if (result.imageBlobs.length && state.promptUploads.length === 0 && !promptTextInput.value.trim()) {
+          const canAddDocImages = state.promptUploads.length === 0 &&
+            (!promptTextInput.value.trim() || (restored && restored.hadDocImages));
+          if (result.imageBlobs.length && canAddDocImages) {
             result.imageBlobs.forEach((blob, i) => {
               const ext = (blob.type.split("/")[1] || "png").replace("jpeg", "jpg");
               const file = new File([blob], `anh-de-tu-docs-${i + 1}.${ext}`, { type: blob.type });
               addUploadedFileItem(promptFileList, state.promptUploads, file, "Đã thêm từ Docs · chờ đọc đề");
+              state.promptUploads[state.promptUploads.length - 1].fromDoc = true;
             });
             promptAdded = result.imageBlobs.length;
           }
 
-          const dup = result.students.length - fresh.length;
+          renderRoster();
+          saveClassSession();
+
+          const parts = [];
+          if (added) parts.push(`${added} bài mới`);
+          if (changed) parts.push(`${changed} bài đã sửa`);
+          if (same) parts.push(`${same} bài không đổi`);
+          if (result.skipped.length) parts.push(`${result.skipped.length} bạn chưa nộp`);
+          const waiting = added + changed;
           showFeedback(
-            `Đã lấy ${fresh.length} bài từ Google Docs${promptAdded ? ` và ${promptAdded} ảnh đề` : ""}.` +
-              (dup ? ` ${dup} bài đã có sẵn nên không thêm lại.` : "") +
-              (result.skipped.length ? ` Bỏ qua (chưa có bài): ${result.skipped.join(", ")}.` : "") +
-              " Kiểm tra lại rồi bấm Chấm bài.",
+            (restored ? `Đã mở lại lớp đang chấm dở (${restored.graded} bài đã chấm). ` : "") +
+              `Docs: ${parts.join(" · ") || "không có bài"}.` +
+              (promptAdded ? ` Đã thêm ${promptAdded} ảnh đề.` : "") +
+              (waiting ? ` Bấm "Chấm bài" để chấm ${waiting} bài cần chấm.` : " Không có bài mới cần chấm."),
             false
           );
         } catch (err) {
@@ -2109,6 +2306,91 @@
           docImportBtn.textContent = "Lấy bài";
         }
       }
+
+      /* -----------------------------
+       * Bảng tình trạng cả lớp (thứ tự theo Docs + các bài nhập tay)
+       * ----------------------------- */
+      const classRosterEl = document.getElementById("class-roster");
+      const classRosterCountEl = document.getElementById("class-roster-count");
+      const classRosterListEl = document.getElementById("class-roster-list");
+
+      function rosterStatusOf(entry) {
+        if (!entry) return { label: "Chưa nộp", cls: "is-no", key: "missing" };
+        const st = entry.studentId ? state.students.find((s) => s.id === entry.studentId) : null;
+        if (st && st.status === "pending" && st.tabNote === "đang chấm") return { label: "Đang chấm", cls: "is-partial", key: "grading" };
+        if (st && st.status === "graded" && entry.graded) return { label: "Đã chấm", cls: "is-yes", key: "done", student: st };
+        if (st && st.status === "graded") return { label: "Đã sửa · chờ chấm", cls: "is-partial", key: "waiting", student: st };
+        if (st && st.tabNote === "lỗi") return { label: "Lỗi · chấm lại", cls: "is-no", key: "error", student: st };
+        return { label: "Chờ chấm", cls: "is-partial", key: "waiting" };
+      }
+
+      function renderRoster() {
+        if (!classRosterEl) return;
+        const rows = [];
+        const used = new Set();
+        state.docRoster.forEach((name) => {
+          const entry = state.textStudents.find((t) => !used.has(t) && nameKey(t.nameInput.value) === nameKey(name));
+          if (entry) used.add(entry);
+          rows.push({ name, entry });
+        });
+        state.textStudents.forEach((t) => {
+          if (!used.has(t) && t.textInput.value.trim()) rows.push({ name: t.nameInput.value.trim() || "Chưa có tên", entry: t });
+        });
+
+        classRosterListEl.textContent = "";
+        classRosterEl.classList.toggle("is-hidden", rows.length === 0);
+        if (!rows.length) return;
+
+        const counts = { done: 0, waiting: 0, grading: 0, missing: 0, error: 0 };
+        rows.forEach((row) => {
+          const status = rosterStatusOf(row.entry);
+          counts[status.key] += 1;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "roster-item";
+          const nameEl = document.createElement("span");
+          nameEl.className = "roster-name";
+          nameEl.textContent = row.name;
+          const pill = document.createElement("span");
+          pill.className = `status-pill ${status.cls}`;
+          pill.textContent = status.label;
+          btn.append(nameEl, pill);
+          btn.title = status.student ? "Mở bài đã chấm" : row.entry ? "Xem bài trong danh sách" : "Chưa có bài trong Docs";
+          btn.addEventListener("click", () => {
+            const idx = status.student ? state.students.indexOf(status.student) : -1;
+            if (idx !== -1) {
+              state.activeStudentIndex = idx;
+              state.activeGroup = null;
+              state.selectedErrorId = status.student.errors.length ? status.student.errors[0].id : null;
+              renderActiveStudent();
+              studentTabsEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } else if (row.entry) {
+              row.entry.cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              row.entry.textInput.focus({ preventScroll: true });
+            }
+          });
+          classRosterListEl.appendChild(btn);
+        });
+
+        const bits = [`Đã chấm ${counts.done}/${rows.length}`];
+        if (counts.grading) bits.push(`đang chấm ${counts.grading}`);
+        if (counts.waiting) bits.push(`chờ chấm ${counts.waiting}`);
+        if (counts.error) bits.push(`lỗi ${counts.error}`);
+        if (counts.missing) bits.push(`chưa nộp ${counts.missing}`);
+        classRosterCountEl.textContent = bits.join(" · ");
+      }
+
+      /* Mở trang: nếu lần trước đang chấm dở 1 lớp từ Docs thì điền sẵn link và nhắc */
+      (function hintLastClass() {
+        const lastUrl = storageGet(STORAGE_KEY_LAST_DOC);
+        const lastId = getDocId(lastUrl);
+        const saved = lastId ? readClassSession(lastId) : null;
+        if (!saved) return;
+        docUrlInput.value = lastUrl;
+        const n = (saved.students || []).length;
+        const time = new Date(saved.savedAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+        showFeedback(`Có lớp đang chấm dở (${n} bài đã chấm, lưu lúc ${time}). Bấm "Lấy bài" để mở lại và lấy thêm bài mới.`, false);
+      })();
 
       docImportBtn.addEventListener("click", importFromGoogleDoc);
       docUrlInput.addEventListener("keydown", (e) => {
@@ -2703,6 +2985,8 @@
         } else {
           renderStudentTabs();
         }
+        renderRoster();
+        saveClassSession();
       }
 
       async function handleGradeWithAI() {
@@ -2784,6 +3068,7 @@
           );
           if (existing) state.students[prevIdx] = placeholder;
           else state.students.push(placeholder);
+          entry.studentId = id; // để bảng tình trạng hiện "Đang chấm"
           entry.statusSpan.textContent = "Đang chấm...";
           entry.statusSpan.classList.remove("is-done");
           return { kind: "text", entry, id, name, prev };
@@ -2792,6 +3077,7 @@
         if (firstNewIdx !== -1) state.activeStudentIndex = firstNewIdx;
         renderModeHeader();
         renderActiveStudent();
+        renderRoster();
 
         try {
           // Ảnh đề chỉ chuẩn bị 1 lần, dùng chung cho mọi bài
@@ -2930,6 +3216,8 @@
           gradeBtn.disabled = false;
           formResetBtn.textContent = "Reset lớp";
           renderModeHeader();
+          renderRoster();
+          saveClassSession();
         }
       }
 
