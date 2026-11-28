@@ -52,6 +52,13 @@ Docs cũ không theo mẫu (bảng Tên | Bài) vẫn dùng được như trư�
 
 **Bật trang web (chỉ cần làm 1 lần):** vào repo → **Settings** → **Pages** → ở mục Branch chọn **main** → **Save**. Chờ khoảng 1 phút là link trên dùng được.
 
+## Ghi chỗ sửa vào Google Docs bằng trợ lý AI (tuỳ chọn)
+
+Ở mục **Bảng tổng hợp lỗi** có nút **Chép phiếu sửa**. Nút này chép danh sách chỗ sửa của **cả lớp** (các bài đã chấm). Mỗi chỗ sửa có một đoạn chữ lấy nguyên văn từ bài gốc, đủ dài để chỉ có một chỗ khớp trong cả lớp. Dán phiếu này cho một trợ lý AI biết dùng trình duyệt (ví dụ Google Antigravity hoặc Muse của Meta). Trợ lý sẽ mở Docs của lớp, bật chế độ **Đề xuất** rồi gõ từng chỗ sửa. Cô chỉ cần vào Docs bấm Chấp nhận/Từ chối.
+
+- Chỗ nào web không chắc tìm đúng (AI chép lại bài khác bài gốc, hoặc đoạn lặp lại nhiều lần) sẽ nằm trong phần **"CẦN CÔ SỬA TAY"** ở cuối phiếu.
+- Trình duyệt không cho chép thì web tải về file `phieu-sua.txt`.
+
 ## Thay đổi gần đây (11/2026)
 
 **Lỗi đã sửa**
@@ -63,3 +70,4 @@ Docs cũ không theo mẫu (bảng Tên | Bài) vẫn dùng được như trư�
 1. Lấy bài từ **link Google Docs**: không cần chụp ảnh, và AI giữ đúng lỗi của học sinh (đọc ảnh thì AI hay tự sửa mất lỗi).
 2. **Chấm theo đợt**, **bảng Tình trạng lớp** và **nhớ lớp đang chấm** (xem phần "Chấm theo đợt" ở trên).
 3. **Mẫu Google Docs cho lớp** với cột "Xong?" và ô tích "Chấm" để không chấm bài viết dở (xem phần "Mẫu Google Docs cho lớp").
+4. Nút **Chép phiếu sửa** để trợ lý AI ghi chỗ sửa thành Đề xuất trong Docs (xem phần "Ghi chỗ sửa vào Google Docs").

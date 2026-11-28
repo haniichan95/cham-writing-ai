@@ -748,7 +748,10 @@
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Bảng tổng hợp lỗi</h2>
-            <span class="card-meta">Bấm vào số để xem chi tiết</span>
+            <div class="rewrite-controls">
+              <span class="card-meta">Bấm vào số để xem chi tiết</span>
+              <button type="button" class="btn-secondary" id="copy-fix-sheet-btn" title="Chép danh sách chỗ sửa của cả lớp để dán cho trợ lý AI (Antigravity/Muse) ghi thành Đề xuất trong Google Docs">Chép phiếu sửa</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table class="error-table">
@@ -1512,6 +1515,210 @@
           }, 2000);
         } catch (err) {
           selectRewriteNodeText();
+        }
+      });
+
+      /* -----------------------------
+       * Phiếu sửa cho trợ lý AI điều khiển trình duyệt
+       * (Antigravity / Muse mở Google Docs, bật chế độ Đề xuất rồi gõ từng chỗ sửa).
+       * Mỗi chỗ sửa có 1 đoạn "Tìm" lấy NGUYÊN VĂN từ bài gốc, đủ dài để chỉ xuất hiện
+       * 1 lần trong cả lớp (Docs tìm không phân biệt hoa thường, không tìm qua dòng mới).
+       * ----------------------------- */
+      const copyFixSheetBtn = document.getElementById("copy-fix-sheet-btn");
+      let copyFixSheetTimer = null;
+
+      function countOccurrences(haystacks, needleLower) {
+        let total = 0;
+        haystacks.forEach((h) => {
+          let from = 0;
+          while (true) {
+            const i = h.indexOf(needleLower, from);
+            if (i === -1) break;
+            total += 1;
+            from = i + 1;
+          }
+        });
+        return total;
+      }
+
+      function commonSuffixLen(a, b) {
+        let n = 0;
+        while (n < a.length && n < b.length && a[a.length - 1 - n] === b[b.length - 1 - n]) n += 1;
+        return n;
+      }
+
+      function commonPrefixLen(a, b) {
+        let n = 0;
+        while (n < a.length && n < b.length && a[n] === b[n]) n += 1;
+        return n;
+      }
+
+      /** Tìm vị trí chữ sai trong bài gốc (chọn chỗ có ngữ cảnh giống bản AI trả về nhất). */
+      function locateInOriginal(original, aiText, aiPos, wrong) {
+        const before = aiText.slice(Math.max(0, aiPos - 40), aiPos);
+        const after = aiText.slice(aiPos + wrong.length, aiPos + wrong.length + 40);
+        let best = -1;
+        let bestScore = -1;
+        let from = 0;
+        while (true) {
+          const q = original.indexOf(wrong, from);
+          if (q === -1) break;
+          const score =
+            commonSuffixLen(before, original.slice(Math.max(0, q - 40), q)) +
+            commonPrefixLen(after, original.slice(q + wrong.length, q + wrong.length + 40));
+          if (score > bestScore) {
+            bestScore = score;
+            best = q;
+          }
+          from = q + 1;
+        }
+        return best;
+      }
+
+      /** Nới đoạn tìm theo từng chữ (trong cùng 1 dòng) cho tới khi chỉ có 1 kết quả trong cả lớp. */
+      function buildUniqueSnippet(original, q, len, haystacks) {
+        const lineStart = original.lastIndexOf("\n", q - 1) + 1;
+        const nl = original.indexOf("\n", q + len);
+        const lineEnd = nl === -1 ? original.length : nl;
+        let a = q;
+        let b = q + len;
+        const isSpace = (ch) => /\s/.test(ch);
+        for (let step = 0; step < 16; step += 1) {
+          const snippet = original.slice(a, b);
+          if (snippet.trim().length >= 2 && countOccurrences(haystacks, snippet.toLowerCase()) === 1) {
+            return { a, b };
+          }
+          const canRight = b < lineEnd;
+          const canLeft = a > lineStart;
+          if (!canRight && !canLeft) break;
+          if (canRight && (step % 2 === 0 || !canLeft)) {
+            while (b < lineEnd && isSpace(original[b])) b += 1;
+            while (b < lineEnd && !isSpace(original[b])) b += 1;
+          } else {
+            while (a > lineStart && isSpace(original[a - 1])) a -= 1;
+            while (a > lineStart && !isSpace(original[a - 1])) a -= 1;
+          }
+        }
+        return null;
+      }
+
+      function getOriginalTextFor(student) {
+        const entry = state.textStudents.find((e) => e.studentId === student.id);
+        return entry ? entry.textInput.value : "";
+      }
+
+      function buildFixSheet() {
+        const graded = state.students.filter(
+          (s) => s.status === "graded" && Array.isArray(s.errors) && s.errors.length > 0
+        );
+        // Toàn bộ chữ có thể nằm trong Docs: bài gốc của mọi học sinh + chữ đề bài
+        const haystacks = state.textStudents
+          .map((e) => e.textInput.value.toLowerCase())
+          .concat([promptTextInput.value.toLowerCase()]);
+        graded.forEach((s) => {
+          if (!getOriginalTextFor(s)) {
+            haystacks.push(s.tokens.map((t) => (t.type === "text" ? t.value : t.error.wrong)).join("").toLowerCase());
+          }
+        });
+
+        let autoCount = 0;
+        const manual = [];
+        const sections = [];
+
+        graded.forEach((student, sIdx) => {
+          const aiText = student.tokens.map((t) => (t.type === "text" ? t.value : t.error.wrong)).join("");
+          const original = getOriginalTextFor(student) || aiText;
+          const lines = [`=== ${sIdx + 1}. ${student.name} ===`];
+          let pos = 0;
+          student.tokens.forEach((token) => {
+            if (token.type === "text") {
+              pos += token.value.length;
+              return;
+            }
+            const err = token.error;
+            const aiPos = pos;
+            pos += err.wrong.length;
+            if (err.fix.trim() === err.wrong.trim()) return; // không đổi gì
+            const label = `${sIdx + 1}.${err.id}`;
+            const reason = getFirstSentence(err.why);
+            const pushManual = (why) =>
+              manual.push(`[${label}] ${student.name}: "${err.wrong}" → "${err.fix}" (${why})`);
+
+            if (err.wrong.includes("\n")) {
+              pushManual("chữ sai vắt qua 2 dòng");
+              return;
+            }
+            const q = locateInOriginal(original, aiText, aiPos, err.wrong);
+            if (q === -1) {
+              pushManual("không thấy nguyên văn trong bài gốc");
+              return;
+            }
+            const range = buildUniqueSnippet(original, q, err.wrong.length, haystacks);
+            if (!range) {
+              pushManual("đoạn này lặp lại nhiều lần, không tìm được chỗ duy nhất");
+              return;
+            }
+            const snippet = original.slice(range.a, range.b);
+            const skip = Array.from(original.slice(range.a, q)).length;
+            const take = Array.from(err.wrong).length;
+            const whole = skip === 0 && take === Array.from(snippet).length;
+            autoCount += 1;
+            lines.push(
+              `[${label}] ${err.group}`,
+              `  Tìm: «${snippet}»`,
+              whole
+                ? `  Chọn: cả đoạn tìm được`
+                : `  Chọn: bỏ qua ${skip} ký tự đầu, chọn ${take} ký tự «${err.wrong}»`,
+              `  Sửa thành: «${err.fix}»`,
+              `  Lý do: ${reason}`
+            );
+          });
+          if (lines.length > 1) sections.push(lines.join("\n"));
+        });
+
+        const docUrl = docUrlInput.value.trim();
+        const header = [
+          "PHIẾU SỬA — Chấm Writing",
+          `Google Docs: ${docUrl || "(chưa có link — dán link Docs của lớp vào đây)"}`,
+          `Số học sinh: ${sections.length} · Chỗ sửa tự động: ${autoCount} · Cần sửa tay: ${manual.length}`,
+          "Cách làm: bật chế độ Đề xuất; với mỗi mục: Cmd+F tìm đúng chữ trong «», Enter, Esc, chọn như ghi, gõ chữ Sửa thành.",
+          "Nếu ô tìm báo 0 hoặc từ 2 kết quả trở lên: BỎ QUA mục đó và ghi vào danh sách báo lại."
+        ].join("\n");
+        const parts = [header, ...sections];
+        if (manual.length) parts.push(["=== CẦN CÔ SỬA TAY ===", ...manual].join("\n"));
+        return { text: parts.join("\n\n"), autoCount, manualCount: manual.length };
+      }
+
+      copyFixSheetBtn.addEventListener("click", async () => {
+        const sheet = buildFixSheet();
+        const flash = (label) => {
+          copyFixSheetBtn.textContent = label;
+          copyFixSheetBtn.classList.add("is-copied");
+          clearTimeout(copyFixSheetTimer);
+          copyFixSheetTimer = setTimeout(() => {
+            copyFixSheetBtn.textContent = "Chép phiếu sửa";
+            copyFixSheetBtn.classList.remove("is-copied");
+          }, 2500);
+        };
+        if (sheet.autoCount + sheet.manualCount === 0) {
+          flash("Chưa có lỗi để chép");
+          return;
+        }
+        try {
+          if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+            throw new Error("Clipboard unavailable");
+          }
+          await navigator.clipboard.writeText(sheet.text);
+          flash(`Đã chép ${sheet.autoCount + sheet.manualCount} chỗ sửa`);
+        } catch (err) {
+          // Không chép được (trình duyệt chặn) → tải về file .txt
+          const blob = new Blob([sheet.text], { type: "text/plain;charset=utf-8" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "phieu-sua.txt";
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+          flash("Đã tải phiếu sửa");
         }
       });
 
