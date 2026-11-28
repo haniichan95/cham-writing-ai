@@ -28,7 +28,7 @@ Trang web giúp giáo viên chấm bài Writing tiếng Anh theo giáo trình Ca
 File mẫu: [`mau-docs/mau-bai-viet-lop-cham-writing.docx`](mau-docs/mau-bai-viet-lop-cham-writing.docx). Mẫu có phần **ĐỀ BÀI** (Level, số từ, chữ đề) và bảng **STT | Tên học sinh | Xong? | Bài làm**.
 
 **Cách dùng mẫu:**
-1. Tải file lên Google Drive → mở bằng Google Tài liệu → **Tệp → Lưu dưới dạng Google Tài liệu**. Bắt buộc bước này: file .docx để nguyên thì trang không lấy bài được.
+1. Tải file lên Google Drive rồi mở bằng Google Tài liệu. Để nguyên file .docx vẫn dùng được (trang lấy bài bình thường); không cần chuyển sang Google Tài liệu nếu bố cục bị xô lệch khi chuyển.
 2. **Điền sẵn tên cả lớp** vào cột "Tên học sinh".
 3. Phần ĐỀ BÀI: ghi **Level** (A1 / A2 / B1 / B2) và **Số từ**, rồi **dán ảnh đề** ngay dưới dòng ghi chú (VD ảnh đề bài + ảnh khung "Review / Prepare to write"). Không cần gõ lại chữ đề. Nếu cô gõ chữ đề ở đây thì trang dùng phần chữ và bỏ qua ảnh.
 4. Chia sẻ **"Bất kỳ ai có đường liên kết"** với quyền **Người chỉnh sửa** để học sinh viết.
