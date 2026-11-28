@@ -248,11 +248,24 @@
     .text-students-list { display: flex; flex-direction: column; gap: 7px; }
     .text-student-card { border: 1px solid var(--border); background: var(--surface-subtle); border-radius: 8px; padding: 8px 9px; display: flex; flex-direction: column; gap: 6px; }
     .text-student-head { display: flex; align-items: center; gap: 6px; }
+    .pick-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
+    .pick-label input { width: 15px; height: 15px; margin: 0; accent-color: var(--accent); cursor: pointer; }
     .text-student-head .text-input { background: var(--surface); padding: 5px 8px; font-size: 12px; font-weight: 600; flex: 1; min-width: 0; }
     .text-student-status { font-size: 10.5px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
     .text-student-status.is-done { color: var(--accent-text); }
     .text-student-card .textarea-input { background: var(--surface); min-height: 66px; font-size: 12px; padding: 6px 8px; }
     .btn-add-student { border: 1px dashed var(--border-strong); background: var(--surface); color: var(--accent-text); border-radius: 8px; padding: 7px 9px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+    .doc-import-row { display: flex; gap: 6px; }
+    .doc-import-row .text-input { flex: 1; min-width: 0; }
+    .doc-import-row .btn-secondary { white-space: nowrap; }
+    .class-roster { border: 1px solid var(--border); border-radius: 9px; background: var(--surface-subtle); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .class-roster-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+    .class-roster-count { color: var(--text-muted); font-weight: 500; text-align: right; }
+    .class-roster-list { display: flex; flex-direction: column; gap: 1px; max-height: 240px; overflow-y: auto; }
+    .roster-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 12.5px; padding: 5px 6px; border-radius: 6px; cursor: pointer; text-align: left; }
+    .roster-item:hover { background: var(--surface-hover); }
+    .roster-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+    .roster-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-add-student:hover { background: var(--accent-tint); border-color: var(--accent); }
     .form-actions-row { display: flex; gap: 7px; align-items: stretch; }
     .form-actions-row .btn-primary { flex: 1; }
@@ -345,7 +358,7 @@
     .ratio-seg[data-group="Logic"] { background: var(--err-logic); }
     .ratio-seg[data-group="Spelling & Punctuation"] { background: var(--err-spelling); }
 
-    .essay-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.2; margin: 0; word-wrap: break-word; }
+    .essay-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.2; margin: 0; word-wrap: break-word; white-space: pre-wrap; }
     .err-mark {
       cursor: pointer; border-radius: 5px; padding: 1px 3px; margin: 0 1px;
       text-decoration-line: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
@@ -475,7 +488,7 @@
     .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); }
     .btn-secondary.is-copied { background: var(--accent-tint); border-color: var(--accent-border); color: var(--accent-text); }
 
-    .rewrite-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.0; margin: 0 0 10px; word-wrap: break-word; }
+    .rewrite-body { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 2.0; margin: 0 0 10px; word-wrap: break-word; white-space: pre-wrap; }
     .rewrite-change { border-radius: 5px; padding: 1px 4px; }
     .rewrite-body.show-highlights .rewrite-change { background-color: var(--accent-tint-strong); }
 
@@ -575,6 +588,18 @@
 
       <div class="field-group">
         <span class="field-label"><span class="step-num">05</span> Bài làm của học sinh <span class="field-sub">nhiều ảnh hoặc nhiều bài cùng lúc</span></span>
+        <div class="doc-import-row">
+          <input id="doc-url-input" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="Dán link Google Docs (bảng Tên | Bài)" aria-label="Link Google Docs chứa bài làm" />
+          <button type="button" class="btn-secondary" id="doc-import-btn">Lấy bài</button>
+        </div>
+        <p class="field-note">Docs cần chia sẻ “Bất kỳ ai có đường liên kết”. Mỗi dòng trong bảng thành 1 bài; ảnh đề ở đầu Docs tự vào mục 03. Bạn nào nộp sau thì bấm “Lấy bài” lại: chỉ bài mới hoặc bài vừa sửa phải chấm.</p>
+        <div class="class-roster is-hidden" id="class-roster" aria-label="Tình trạng lớp">
+          <div class="class-roster-head">
+            <span>Tình trạng lớp</span>
+            <span class="class-roster-count" id="class-roster-count" aria-live="polite"></span>
+          </div>
+          <div class="class-roster-list" id="class-roster-list"></div>
+        </div>
         <div class="file-list" id="work-file-list"></div>
         <div class="dropzone" id="work-dropzone" tabindex="0" aria-label="Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm">
           <span class="dropzone-main">Nhấn vào đây rồi Ctrl+V để dán ảnh hoặc văn bản bài làm</span>
@@ -723,7 +748,10 @@
         <section class="card">
           <div class="card-title-row">
             <h2 class="card-title">Bảng tổng hợp lỗi</h2>
-            <span class="card-meta">Bấm vào số để xem chi tiết</span>
+            <div class="rewrite-controls">
+              <span class="card-meta">Bấm vào số để xem chi tiết</span>
+              <button type="button" class="btn-secondary" id="copy-fix-sheet-btn" title="Chép danh sách chỗ sửa của cả lớp để dán cho trợ lý AI (Antigravity/Muse) ghi thành Đề xuất trong Google Docs">Chép phiếu sửa</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table class="error-table">
@@ -760,6 +788,8 @@
       const STORAGE_KEY_API = "cham_writing_gemini_api_key";
       const STORAGE_KEY_MODEL = "cham_writing_gemini_model";
       const STORAGE_KEY_CUSTOM_MODEL = "cham_writing_gemini_custom_model";
+      const STORAGE_KEY_LAST_DOC = "cham_writing_last_doc_url";
+      const STORAGE_PREFIX_CLASS = "cham_writing_class_"; // + id Docs → lớp đang chấm dở
 
       const LEVEL_INFO = {
         A1: {
@@ -850,7 +880,9 @@
         isGrading: false,
         promptUploads: [],
         workUploads: [],
-        textStudents: []
+        textStudents: [],
+        docId: null,    // Docs đang chấm (để lưu/mở lại lớp)
+        docRoster: []   // tên học sinh theo thứ tự trong Docs, kể cả bạn chưa nộp
       };
 
       /* -----------------------------
@@ -1028,7 +1060,7 @@
           if (student.status === "graded") {
             subSpan.textContent = `${student.errors.length} lỗi`;
           } else {
-            subSpan.textContent = "chưa chấm";
+            subSpan.textContent = student.tabNote || "chưa chấm";
           }
 
           btn.append(nameSpan, subSpan);
@@ -1430,6 +1462,7 @@
         btn.addEventListener("click", () => {
           state.level = btn.dataset.level;
           renderLevel();
+          saveClassSession();
         });
       });
 
@@ -1482,6 +1515,210 @@
           }, 2000);
         } catch (err) {
           selectRewriteNodeText();
+        }
+      });
+
+      /* -----------------------------
+       * Phiếu sửa cho trợ lý AI điều khiển trình duyệt
+       * (Antigravity / Muse mở Google Docs, bật chế độ Đề xuất rồi gõ từng chỗ sửa).
+       * Mỗi chỗ sửa có 1 đoạn "Tìm" lấy NGUYÊN VĂN từ bài gốc, đủ dài để chỉ xuất hiện
+       * 1 lần trong cả lớp (Docs tìm không phân biệt hoa thường, không tìm qua dòng mới).
+       * ----------------------------- */
+      const copyFixSheetBtn = document.getElementById("copy-fix-sheet-btn");
+      let copyFixSheetTimer = null;
+
+      function countOccurrences(haystacks, needleLower) {
+        let total = 0;
+        haystacks.forEach((h) => {
+          let from = 0;
+          while (true) {
+            const i = h.indexOf(needleLower, from);
+            if (i === -1) break;
+            total += 1;
+            from = i + 1;
+          }
+        });
+        return total;
+      }
+
+      function commonSuffixLen(a, b) {
+        let n = 0;
+        while (n < a.length && n < b.length && a[a.length - 1 - n] === b[b.length - 1 - n]) n += 1;
+        return n;
+      }
+
+      function commonPrefixLen(a, b) {
+        let n = 0;
+        while (n < a.length && n < b.length && a[n] === b[n]) n += 1;
+        return n;
+      }
+
+      /** Tìm vị trí chữ sai trong bài gốc (chọn chỗ có ngữ cảnh giống bản AI trả về nhất). */
+      function locateInOriginal(original, aiText, aiPos, wrong) {
+        const before = aiText.slice(Math.max(0, aiPos - 40), aiPos);
+        const after = aiText.slice(aiPos + wrong.length, aiPos + wrong.length + 40);
+        let best = -1;
+        let bestScore = -1;
+        let from = 0;
+        while (true) {
+          const q = original.indexOf(wrong, from);
+          if (q === -1) break;
+          const score =
+            commonSuffixLen(before, original.slice(Math.max(0, q - 40), q)) +
+            commonPrefixLen(after, original.slice(q + wrong.length, q + wrong.length + 40));
+          if (score > bestScore) {
+            bestScore = score;
+            best = q;
+          }
+          from = q + 1;
+        }
+        return best;
+      }
+
+      /** Nới đoạn tìm theo từng chữ (trong cùng 1 dòng) cho tới khi chỉ có 1 kết quả trong cả lớp. */
+      function buildUniqueSnippet(original, q, len, haystacks) {
+        const lineStart = original.lastIndexOf("\n", q - 1) + 1;
+        const nl = original.indexOf("\n", q + len);
+        const lineEnd = nl === -1 ? original.length : nl;
+        let a = q;
+        let b = q + len;
+        const isSpace = (ch) => /\s/.test(ch);
+        for (let step = 0; step < 16; step += 1) {
+          const snippet = original.slice(a, b);
+          if (snippet.trim().length >= 2 && countOccurrences(haystacks, snippet.toLowerCase()) === 1) {
+            return { a, b };
+          }
+          const canRight = b < lineEnd;
+          const canLeft = a > lineStart;
+          if (!canRight && !canLeft) break;
+          if (canRight && (step % 2 === 0 || !canLeft)) {
+            while (b < lineEnd && isSpace(original[b])) b += 1;
+            while (b < lineEnd && !isSpace(original[b])) b += 1;
+          } else {
+            while (a > lineStart && isSpace(original[a - 1])) a -= 1;
+            while (a > lineStart && !isSpace(original[a - 1])) a -= 1;
+          }
+        }
+        return null;
+      }
+
+      function getOriginalTextFor(student) {
+        const entry = state.textStudents.find((e) => e.studentId === student.id);
+        return entry ? entry.textInput.value : "";
+      }
+
+      function buildFixSheet() {
+        const graded = state.students.filter(
+          (s) => s.status === "graded" && Array.isArray(s.errors) && s.errors.length > 0
+        );
+        // Toàn bộ chữ có thể nằm trong Docs: bài gốc của mọi học sinh + chữ đề bài
+        const haystacks = state.textStudents
+          .map((e) => e.textInput.value.toLowerCase())
+          .concat([promptTextInput.value.toLowerCase()]);
+        graded.forEach((s) => {
+          if (!getOriginalTextFor(s)) {
+            haystacks.push(s.tokens.map((t) => (t.type === "text" ? t.value : t.error.wrong)).join("").toLowerCase());
+          }
+        });
+
+        let autoCount = 0;
+        const manual = [];
+        const sections = [];
+
+        graded.forEach((student, sIdx) => {
+          const aiText = student.tokens.map((t) => (t.type === "text" ? t.value : t.error.wrong)).join("");
+          const original = getOriginalTextFor(student) || aiText;
+          const lines = [`=== ${sIdx + 1}. ${student.name} ===`];
+          let pos = 0;
+          student.tokens.forEach((token) => {
+            if (token.type === "text") {
+              pos += token.value.length;
+              return;
+            }
+            const err = token.error;
+            const aiPos = pos;
+            pos += err.wrong.length;
+            if (err.fix.trim() === err.wrong.trim()) return; // không đổi gì
+            const label = `${sIdx + 1}.${err.id}`;
+            const reason = getFirstSentence(err.why);
+            const pushManual = (why) =>
+              manual.push(`[${label}] ${student.name}: "${err.wrong}" → "${err.fix}" (${why})`);
+
+            if (err.wrong.includes("\n")) {
+              pushManual("chữ sai vắt qua 2 dòng");
+              return;
+            }
+            const q = locateInOriginal(original, aiText, aiPos, err.wrong);
+            if (q === -1) {
+              pushManual("không thấy nguyên văn trong bài gốc");
+              return;
+            }
+            const range = buildUniqueSnippet(original, q, err.wrong.length, haystacks);
+            if (!range) {
+              pushManual("đoạn này lặp lại nhiều lần, không tìm được chỗ duy nhất");
+              return;
+            }
+            const snippet = original.slice(range.a, range.b);
+            const skip = Array.from(original.slice(range.a, q)).length;
+            const take = Array.from(err.wrong).length;
+            const whole = skip === 0 && take === Array.from(snippet).length;
+            autoCount += 1;
+            lines.push(
+              `[${label}] ${err.group}`,
+              `  Tìm: «${snippet}»`,
+              whole
+                ? `  Chọn: cả đoạn tìm được`
+                : `  Chọn: bỏ qua ${skip} ký tự đầu, chọn ${take} ký tự «${err.wrong}»`,
+              `  Sửa thành: «${err.fix}»`,
+              `  Lý do: ${reason}`
+            );
+          });
+          if (lines.length > 1) sections.push(lines.join("\n"));
+        });
+
+        const docUrl = docUrlInput.value.trim();
+        const header = [
+          "PHIẾU SỬA — Chấm Writing",
+          `Google Docs: ${docUrl || "(chưa có link — dán link Docs của lớp vào đây)"}`,
+          `Số học sinh: ${sections.length} · Chỗ sửa tự động: ${autoCount} · Cần sửa tay: ${manual.length}`,
+          "Cách làm: bật chế độ Đề xuất; với mỗi mục: Cmd+F tìm đúng chữ trong «», Enter, Esc, chọn như ghi, gõ chữ Sửa thành.",
+          "Nếu ô tìm báo 0 hoặc từ 2 kết quả trở lên: BỎ QUA mục đó và ghi vào danh sách báo lại."
+        ].join("\n");
+        const parts = [header, ...sections];
+        if (manual.length) parts.push(["=== CẦN CÔ SỬA TAY ===", ...manual].join("\n"));
+        return { text: parts.join("\n\n"), autoCount, manualCount: manual.length };
+      }
+
+      copyFixSheetBtn.addEventListener("click", async () => {
+        const sheet = buildFixSheet();
+        const flash = (label) => {
+          copyFixSheetBtn.textContent = label;
+          copyFixSheetBtn.classList.add("is-copied");
+          clearTimeout(copyFixSheetTimer);
+          copyFixSheetTimer = setTimeout(() => {
+            copyFixSheetBtn.textContent = "Chép phiếu sửa";
+            copyFixSheetBtn.classList.remove("is-copied");
+          }, 2500);
+        };
+        if (sheet.autoCount + sheet.manualCount === 0) {
+          flash("Chưa có lỗi để chép");
+          return;
+        }
+        try {
+          if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+            throw new Error("Clipboard unavailable");
+          }
+          await navigator.clipboard.writeText(sheet.text);
+          flash(`Đã chép ${sheet.autoCount + sheet.manualCount} chỗ sửa`);
+        } catch (err) {
+          // Không chép được (trình duyệt chặn) → tải về file .txt
+          const blob = new Blob([sheet.text], { type: "text/plain;charset=utf-8" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "phieu-sua.txt";
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+          flash("Đã tải phiếu sửa");
         }
       });
 
@@ -1545,6 +1782,12 @@
         state.activeStudentIndex = 0;
         state.activeGroup = null;
         state.selectedErrorId = null;
+        if (state.docId) deleteClassSession(state.docId);
+        state.docId = null;
+        state.docRoster = [];
+        docUrlInput.value = "";
+        storageSet(STORAGE_KEY_LAST_DOC, "");
+        renderRoster();
         renderModeHeader();
         renderActiveStudent();
         showFeedback("Đã xóa dữ liệu lớp cũ. Bạn có thể nhập đề và bài làm cho lớp mới.", false);
@@ -1677,7 +1920,7 @@
         listEl.appendChild(item);
       }
 
-      function addTextStudentCard(defaultName = "", defaultText = "") {
+      function addTextStudentCard(defaultName = "", defaultText = "", options = {}) {
         const card = document.createElement("div");
         card.className = "text-student-card";
 
@@ -1700,7 +1943,16 @@
         removeBtn.setAttribute("aria-label", "Xóa bài học sinh này");
         removeBtn.appendChild(createSvgCloseIcon());
 
-        head.append(nameInput, statusSpan, removeBtn);
+        // Ô tích "Chấm": chỉ bài được tích mới gửi cho AI (bài học sinh đang viết dở thì bỏ tích để khỏi tốn lượt)
+        const pickLabel = document.createElement("label");
+        pickLabel.className = "pick-label";
+        pickLabel.title = "Tích để chấm bài này khi bấm Chấm bài";
+        const pickInput = document.createElement("input");
+        pickInput.type = "checkbox";
+        pickInput.checked = options.picked !== false;
+        pickLabel.append(pickInput, document.createTextNode("Chấm"));
+
+        head.append(pickLabel, nameInput, statusSpan, removeBtn);
 
         const textInput = document.createElement("textarea");
         textInput.className = "textarea-input";
@@ -1712,8 +1964,13 @@
           nameInput,
           textInput,
           statusSpan,
+          removeBtn,
+          pickInput,
+          manualPick: false, // cô tự tích/bỏ tích → lần "Lấy bài" sau không tự đổi lại
+          docDone: null,     // cột "Xong?" trong Docs: true / false / null (Docs không có cột này)
           cardEl: card,
-          graded: false
+          graded: false,
+          studentId: null // id tab kết quả đã chấm, để chấm lại thì thay đúng tab đó
         };
         state.textStudents.push(entry);
 
@@ -1724,7 +1981,12 @@
             entry.statusSpan.textContent = "Đã sửa · chờ chấm";
             entry.statusSpan.classList.remove("is-done");
           }
+          renderRoster();
         };
+        pickInput.addEventListener("change", () => {
+          entry.manualPick = true;
+          renderRoster();
+        });
         nameInput.addEventListener("input", markDirty);
         textInput.addEventListener("input", markDirty);
 
@@ -1732,11 +1994,12 @@
           const idx = state.textStudents.indexOf(entry);
           if (idx !== -1) state.textStudents.splice(idx, 1);
           card.remove();
+          renderRoster();
         });
 
         card.append(head, textInput);
         textStudentsListEl.appendChild(card);
-        nameInput.focus();
+        if (options.focus !== false) nameInput.focus();
       }
 
       addTextStudentBtn.addEventListener("click", () => addTextStudentCard());
@@ -1898,8 +2161,578 @@
         getStore: () => state.workUploads,
         statusMessage: "Đã thêm · chờ nhận diện tên học sinh",
         onTextPaste: (text) => {
+          // Dán link Google Docs vào ô bài làm → tự lấy bài thay vì tạo 1 bài chứa đường link
+          if (getDocId(text) && /docs\.google\.com/.test(text)) {
+            docUrlInput.value = text;
+            importFromGoogleDoc();
+            return;
+          }
           addTextStudentCard("", text);
           showFeedback("Đã thêm 1 bài viết học sinh từ văn bản vừa dán.", false);
+        }
+      });
+
+      /* -----------------------------
+       * Lấy bài từ link Google Docs
+       * Gọi bản xuất HTML của Docs: chữ lấy trực tiếp nên đúng từng ký tự (không qua AI đọc ảnh).
+       * Bố cục mong đợi: ảnh đề ở đầu tài liệu + bảng "Tên | Bài". Bình luận giáo viên [a], [b]… bị bỏ.
+       * Google chỉ cho gọi từ trang http/https (GitHub Pages, localhost), KHÔNG cho file:// (mở bằng bấm đúp).
+       * ----------------------------- */
+      const docUrlInput = document.getElementById("doc-url-input");
+      const docImportBtn = document.getElementById("doc-import-btn");
+
+      function getDocId(url) {
+        const s = String(url || "").trim();
+        const m = s.match(/\/document\/(?:u\/\d+\/)?d\/([\w-]{20,})/);
+        return m ? m[1] : (/^[\w-]{25,}$/.test(s) ? s : null);
+      }
+
+      function countWords(text) {
+        return String(text || "").trim().split(/\s+/).filter(Boolean).length;
+      }
+
+      function parseGoogleDocHtml(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        // Docs đặt style trong class CSS → gom lại để biết chữ nào có màu / gạch ngang
+        const css = {};
+        doc.querySelectorAll("style").forEach((st) => {
+          for (const m of st.textContent.matchAll(/\.([\w-]+)\s*\{([^}]*)\}/g)) {
+            css[m[1]] = (css[m[1]] || "") + ";" + m[2];
+          }
+        });
+        const styleOf = (el) =>
+          Array.from(el.classList).map((c) => css[c] || "").join(";") + ";" + (el.getAttribute("style") || "");
+        // Chữ màu (không phải đen/xám) = giáo viên chèn thêm khi sửa trên Docs → bỏ để giữ bài gốc
+        const isColored = (s) => {
+          const all = Array.from(s.matchAll(/(?:^|[;{\s])color\s*:\s*#([0-9a-f]{6})/gi));
+          const m = all[all.length - 1];
+          if (!m) return false;
+          const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+          return Math.max(r, g, b) - Math.min(r, g, b) > 60;
+        };
+        // Bỏ nội dung bình luận ở cuối tài liệu rồi bỏ dấu [a] [b] chen trong bài
+        doc.querySelectorAll('a[href^="#cmnt_ref"], a[href^="#ftnt_ref"]').forEach((a) => {
+          (a.closest("div") || a.closest("p") || a).remove();
+        });
+        doc.querySelectorAll('a[href^="#cmnt"], a[href^="#ftnt"]').forEach((a) => a.remove());
+
+        const isTeacherInsert = (node, stop) => {
+          let strike = false, colored = false, link = false;
+          for (let el = node.parentElement; el && el !== stop.parentElement; el = el.parentElement) {
+            const s = styleOf(el);
+            if (/text-decoration[^;]*line-through/.test(s) || el.tagName === "S" || el.tagName === "DEL") strike = true;
+            if (isColored(s)) colored = true;
+            if (el.tagName === "A") link = true;
+          }
+          // Docs tự biến "Festival.We" (thiếu dấu cách) thành link xanh → không phải chữ giáo viên chèn
+          if (link) colored = false;
+          return colored && !strike;
+        };
+        // keepAll: lấy cả chữ màu (dùng cho phần ĐỀ BÀI; quy tắc bỏ chữ màu chỉ dành cho bài làm trong bảng)
+        const blockText = (el, keepAll = false) => {
+          const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+          let out = "";
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            if (n.nodeType === 1) {
+              if (n.tagName === "BR") out += "\n";
+              continue;
+            }
+            if (keepAll || !isTeacherInsert(n, el)) out += n.nodeValue.replace(/\s*\n\s*/g, " ");
+          }
+          return out.replace(/ /g, " ").replace(/[ \t]+/g, " ")
+            .split("\n").map((line) => line.trim()).join("\n").trim();
+        };
+        const cellText = (cell) => {
+          const blocks = cell.querySelectorAll("p, li, h1, h2, h3, h4, h5, h6");
+          const lines = blocks.length ? Array.from(blocks).map(blockText) : [blockText(cell)];
+          return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+        };
+
+        const firstTable = doc.querySelector("table");
+        // Ảnh nằm trước bảng đầu tiên = ảnh đề bài
+        const images = Array.from(doc.querySelectorAll("img"))
+          .filter((img) => !img.closest("table") &&
+            (!firstTable || (img.compareDocumentPosition(firstTable) & Node.DOCUMENT_POSITION_FOLLOWING)))
+          .map((img) => img.getAttribute("src"))
+          .filter(Boolean);
+
+        const students = [];
+        const skipped = [];
+        const order = []; // tên theo thứ tự dòng trong bảng (cả bạn chưa nộp)
+
+        /* Mẫu Docs chuẩn: bảng có dòng tiêu đề "STT | Tên học sinh | Xong? | Bài làm".
+         * Nhận cột theo tên tiêu đề; Docs cũ (VD "Names | Reply emails") vẫn đọc được. */
+        const lower = (t) => String(t || "").normalize("NFC").toLowerCase().trim();
+        const readHeader = (cells) => {
+          const texts = cells.map((c) => lower(cellText(c)));
+          if (countWords(texts.join(" ")) >= 15) return null; // dòng có bài viết, không phải tiêu đề
+          const used = new Set();
+          const find = (re) => {
+            const idx = texts.findIndex((t, i) => !used.has(i) && re.test(t));
+            if (idx !== -1) used.add(idx);
+            return idx;
+          };
+          const stt = find(/^(stt|tt|no\.?|#|số)$/);
+          const name = find(/tên|name|học sinh|student/);
+          const status = find(/xong|done|trạng thái|status|đã nộp/);
+          const essay = find(/bài|essay|answer|writing|reply|email|letter|story/);
+          if (name === -1 || (essay === -1 && status === -1)) return null;
+          return { stt, name, status, essay };
+        };
+        // Ô "Xong?": học sinh gõ x / Xong / Done (hoặc chọn "Xong" trong menu thả xuống) khi viết xong
+        const isDoneMark = (t) =>
+          /^(x|✓|✔|☑|✅|xong|done|rồi|ok|oke|okay|yes|có|đã xong|finished|đã nộp|nộp)(?![\p{L}\p{N}])/u.test(lower(t));
+
+        doc.querySelectorAll("table").forEach((table) => {
+          if (table.parentElement && table.parentElement.closest("table")) return;
+          let header = null;
+          Array.from(table.rows).forEach((tr, rowIdx) => {
+            const cells = Array.from(tr.cells);
+            if (!cells.length) return;
+            if (rowIdx === 0) {
+              header = readHeader(cells);
+              if (header) return;
+            }
+            let name, text, done = null;
+            if (header) {
+              name = cells[header.name] ? cellText(cells[header.name]).replace(/\s+/g, " ") : "";
+              if (header.essay !== -1) {
+                text = cells[header.essay] ? cellText(cells[header.essay]) : "";
+              } else {
+                text = cells.filter((c, i) => i !== header.stt && i !== header.name && i !== header.status)
+                  .map(cellText).filter(Boolean).join("\n");
+              }
+              if (header.status !== -1) done = isDoneMark(cells[header.status] ? cellText(cells[header.status]) : "");
+            } else {
+              name = cells.length > 1 ? cellText(cells[0]).replace(/\s+/g, " ") : "";
+              text = (cells.length > 1 ? cells.slice(1) : cells).map(cellText).filter(Boolean).join("\n");
+              if (rowIdx === 0 && countWords(text) < 15) return; // dòng tiêu đề bảng không nhận ra cột
+            }
+            const n = countWords(text);
+            if (!name && text && students.length) { // ô tên gộp → bài viết tiếp của học sinh trước
+              students[students.length - 1].text += "\n" + text;
+              return;
+            }
+            if (!n) { if (name) { skipped.push(name); order.push(name); } return; }
+            students.push({ name, text, done });
+            if (name) order.push(name);
+          });
+        });
+        if (!firstTable) { // không có bảng: cả tài liệu là 1 bài
+          const text = cellText(doc.body.cloneNode(true));
+          if (countWords(text)) students.push({ name: "", text, done: null });
+        }
+
+        /* Phần "ĐỀ BÀI" phía trên bảng: lấy chữ đề + Level. Dòng bắt đầu bằng "(Cô" là ghi chú mẫu, bỏ qua. */
+        const prompt = { text: "", level: null, hasTask: false };
+        if (firstTable) {
+          const lines = [];
+          for (const el of doc.body.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li")) {
+            if (el.closest("table")) continue;
+            if (!(el.compareDocumentPosition(firstTable) & Node.DOCUMENT_POSITION_FOLLOWING)) break;
+            lines.push(blockText(el, true));
+          }
+          const start = lines.findIndex((l) => /^đề\s*bài(?![\p{L}\p{N}])/u.test(lower(l)));
+          if (start !== -1) {
+            let rest = lines.slice(start + 1);
+            const end = rest.findIndex((l) => /^bài\s*làm(?![\p{L}\p{N}])/u.test(lower(l))); // tiêu đề "BÀI LÀM" ngay trên bảng
+            if (end !== -1) rest = rest.slice(0, end);
+            // Bỏ dòng ghi chú mẫu "(Cô …)" và dòng chưa điền (còn "___")
+            const body = rest.filter((l) => l && !/^\(\s*cô(?![\p{L}\p{N}])/u.test(lower(l)) && !/_{3,}/.test(l));
+            const levelLine = body.find((l) => /^(level|trình độ)\s*[:：]/.test(lower(l)));
+            if (levelLine) {
+              const codes = levelLine.toUpperCase().match(/\b(A1|A2|B1|B2)\b/g) || [];
+              const prep = lower(levelLine).match(/prepare\s*(1|2|4|6)\b/);
+              const byPrep = prep ? { 1: "A1", 2: "A2", 4: "B1", 6: "B2" }[prep[1]] : null;
+              const unique = Array.from(new Set(codes));
+              prompt.level = unique.length === 1 ? unique[0] : byPrep; // mẫu chưa điền (A1 / A2 / B1 / B2) → bỏ qua
+            }
+            prompt.text = body.filter((l) => l !== levelLine).join("\n").trim();
+            // Có chữ đề thật hay chỉ có dòng "Số từ: …" (đề nằm trong ảnh)?
+            prompt.hasTask = body.some((l) => l !== levelLine && !/^số\s*từ\s*[:：]/u.test(lower(l)));
+          }
+        }
+        return { students, skipped, images, order, prompt };
+      }
+
+      async function fetchGoogleDoc(url) {
+        const id = getDocId(url);
+        if (!id) throw new Error("Link chưa đúng. Hãy dán link Google Docs dạng https://docs.google.com/document/d/…");
+        const tab = (String(url).match(/[?&]tab=(t\.[\w.-]+)/) || [])[1];
+        let res;
+        try {
+          res = await fetch(`https://docs.google.com/document/d/${id}/export?format=html${tab ? "&tab=" + tab : ""}`);
+        } catch (err) {
+          throw new Error(location.protocol === "file:"
+            ? "Trang đang mở bằng file trên máy nên Google chặn lấy Docs. Hãy mở trang bằng link GitHub Pages (https://…github.io/…) rồi thử lại."
+            : "Không mở được Docs. Trên Docs bấm Chia sẻ → Quyền truy cập chung → “Bất kỳ ai có đường liên kết” (Người xem), rồi thử lại.");
+        }
+        if (!res.ok) {
+          throw new Error(res.status === 404
+            ? "Không tìm thấy tài liệu. Kiểm tra lại link."
+            : "Không mở được Docs. Trên Docs bấm Chia sẻ → “Bất kỳ ai có đường liên kết” (Người xem), rồi thử lại.");
+        }
+        const parsed = parseGoogleDocHtml(await res.text());
+        const blobs = [];
+        for (const src of parsed.images.slice(0, 6)) {
+          try {
+            const blob = await (await fetch(src)).blob();
+            if (/^image\//.test(blob.type)) blobs.push(blob);
+          } catch (err) {
+            // Ảnh không tải được thì bỏ qua, giáo viên tự dán ảnh đề
+          }
+        }
+        parsed.imageBlobs = blobs;
+        return parsed;
+      }
+
+      /* So khớp học sinh theo tên (bỏ hoa/thường, khoảng trắng thừa) để lấy bài nhiều đợt không bị trùng */
+      function nameKey(name) {
+        return String(name || "").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      }
+
+      function findEntryFor(docStudent) {
+        const key = nameKey(docStudent.name);
+        if (key) return state.textStudents.find((t) => nameKey(t.nameInput.value) === key);
+        return state.textStudents.find((t) => t.textInput.value.trim() === docStudent.text.trim());
+      }
+
+      function setEntryStatus(entry, text, done) {
+        entry.statusSpan.textContent = text;
+        entry.statusSpan.classList.toggle("is-done", !!done);
+      }
+
+      /* -----------------------------
+       * Lưu / mở lại lớp đang chấm (theo link Docs, trong localStorage của trình duyệt)
+       * Ảnh đề không lưu: lấy lại từ Docs mỗi lần bấm "Lấy bài".
+       * ----------------------------- */
+      const MAX_SAVED_CLASSES = 8;
+
+      function serializeStudent(student) {
+        return Object.assign({}, student, {
+          tokens: student.tokens.map((t) => (t.type === "text" ? t : { type: "error", errorId: t.error.id }))
+        });
+      }
+
+      function reviveStudent(raw) {
+        const byId = new Map((raw.errors || []).map((e) => [e.id, e]));
+        raw.tokens = (raw.tokens || [])
+          .map((t) => (t.type === "error" ? { type: "error", error: byId.get(t.errorId) } : t))
+          .filter((t) => t.type === "text" || t.error);
+        return raw;
+      }
+
+      function readClassSession(docId) {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_PREFIX_CLASS + docId);
+          return raw ? JSON.parse(raw) : null;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function deleteClassSession(docId) {
+        try { window.localStorage.removeItem(STORAGE_PREFIX_CLASS + docId); } catch (err) { /* bỏ qua */ }
+      }
+
+      function pruneClassSessions() {
+        try {
+          const saved = [];
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i);
+            if (!key || !key.startsWith(STORAGE_PREFIX_CLASS)) continue;
+            let savedAt = 0;
+            try { savedAt = JSON.parse(window.localStorage.getItem(key)).savedAt || 0; } catch (err) { /* hỏng thì xoá trước */ }
+            saved.push({ key, savedAt });
+          }
+          saved.sort((a, b) => b.savedAt - a.savedAt).slice(MAX_SAVED_CLASSES)
+            .forEach((item) => window.localStorage.removeItem(item.key));
+        } catch (err) { /* bỏ qua */ }
+      }
+
+      function saveClassSession() {
+        if (!state.docId) return;
+        const graded = state.students.filter((s) => s.status === "graded");
+        const data = {
+          v: 1,
+          savedAt: Date.now(),
+          docUrl: docUrlInput.value.trim(),
+          level: state.level,
+          promptText: promptTextInput.value,
+          extraNotes: extraNotesInput.value,
+          hadDocImages: state.promptUploads.some((u) => u.fromDoc),
+          roster: state.docRoster,
+          entries: state.textStudents.map((t) => ({
+            name: t.nameInput.value,
+            text: t.textInput.value,
+            graded: t.graded,
+            studentId: t.studentId,
+            picked: t.pickInput.checked,
+            manualPick: t.manualPick,
+            docDone: t.docDone
+          })),
+          students: graded.map(serializeStudent)
+        };
+        try {
+          window.localStorage.setItem(STORAGE_PREFIX_CLASS + state.docId, JSON.stringify(data));
+          pruneClassSessions();
+        } catch (err) {
+          // Bộ nhớ trình duyệt đầy hoặc bị chặn: vẫn chấm bình thường, chỉ là không nhớ được lớp
+        }
+      }
+
+      /* Mở lại lớp đã lưu. Trả về số bài đã chấm khôi phục được. */
+      function restoreClassSession(docId) {
+        const data = readClassSession(docId);
+        if (!data) return null;
+        state.level = LEVEL_INFO[data.level] ? data.level : state.level;
+        if (data.promptText && data.promptText.trim()) {
+          promptTextInput.value = data.promptText;
+          showPromptTextEditor();
+        }
+        extraNotesInput.value = data.extraNotes || "";
+        state.docRoster = Array.isArray(data.roster) ? data.roster : [];
+        state.students = (data.students || []).map(reviveStudent);
+        const ids = new Set(state.students.map((s) => s.id));
+        (data.entries || []).forEach((e) => {
+          addTextStudentCard(e.name, e.text, { focus: false, picked: e.picked !== false });
+          const entry = state.textStudents[state.textStudents.length - 1];
+          entry.manualPick = !!e.manualPick;
+          entry.docDone = e.docDone === undefined ? null : e.docDone;
+          entry.studentId = ids.has(e.studentId) ? e.studentId : null;
+          entry.graded = !!(e.graded && entry.studentId);
+          if (entry.graded) setEntryStatus(entry, "Đã chấm", true);
+          else if (entry.studentId) setEntryStatus(entry, "Đã sửa · chờ chấm", false);
+        });
+        state.students.forEach((s) => {
+          const n = parseInt(String(s.id).replace(/\D+/g, ""), 10);
+          if (n > studentSeq) studentSeq = n;
+        });
+        state.activeStudentIndex = 0;
+        state.activeGroup = null;
+        const first = getActiveStudent();
+        state.selectedErrorId = first && first.errors.length ? first.errors[0].id : null;
+        renderModeHeader();
+        renderActiveStudent();
+        return { graded: state.students.length, hadDocImages: !!data.hadDocImages };
+      }
+
+      async function importFromGoogleDoc() {
+        if (state.isGrading) return;
+        const url = docUrlInput.value.trim();
+        if (!url) {
+          docUrlInput.focus();
+          showFeedback("Hãy dán link Google Docs chứa bài làm trước.", true);
+          return;
+        }
+        const docId = getDocId(url);
+        if (state.docId && docId && docId !== state.docId) {
+          showFeedback("Đang chấm một lớp khác. Bấm \"Reset lớp mới\" trước khi lấy bài từ Docs khác.", true);
+          return;
+        }
+        docImportBtn.disabled = true;
+        docImportBtn.textContent = "Đang lấy...";
+        showFeedback("Đang lấy bài từ Google Docs...", false);
+        try {
+          const result = await fetchGoogleDoc(url);
+          if (!result.students.length && !result.skipped.length) {
+            throw new Error("Không thấy bài nào trong Docs. Bài cần nằm trong bảng 2 cột Tên | Bài.");
+          }
+
+          // Trang vừa mở (chưa có gì) + Docs này đã chấm dở trước đó → mở lại lớp cũ
+          let restored = null;
+          const pageIsEmpty = !state.docId && state.students.length === 0 &&
+            !state.textStudents.some((t) => t.textInput.value.trim());
+          if (pageIsEmpty) restored = restoreClassSession(docId);
+          state.docId = docId;
+          storageSet(STORAGE_KEY_LAST_DOC, url);
+
+          // Bỏ các ô bài trống còn sót để danh sách gọn
+          state.textStudents
+            .filter((t) => !t.graded && !t.textInput.value.trim())
+            .forEach((t) => t.removeBtn.click());
+
+          // Gộp theo tên: bạn mới → thêm; bài đổi → cập nhật và chờ chấm lại; không đổi → giữ nguyên
+          let added = 0, changed = 0, same = 0;
+          result.students.forEach((st) => {
+            let entry = findEntryFor(st);
+            if (!entry) {
+              addTextStudentCard(st.name, st.text, { focus: false, picked: st.done !== false });
+              entry = state.textStudents[state.textStudents.length - 1];
+              added += 1;
+            } else if (entry.textInput.value.trim() === st.text.trim()) {
+              same += 1;
+            } else {
+              entry.textInput.value = st.text;
+              entry.graded = false;
+              changed += 1;
+            }
+            // Cột "Xong?": tự tích bài đã xong, bỏ tích bài đang viết (trừ khi cô đã tự chọn)
+            entry.docDone = st.done;
+            if (!entry.manualPick) entry.pickInput.checked = st.done !== false;
+            if (!entry.graded) {
+              if (st.done === false) setEntryStatus(entry, "Đang viết", false);
+              else setEntryStatus(entry, entry.studentId ? "Nộp lại · chờ chấm" : "Chờ chấm", false);
+            }
+          });
+          const writing = result.students.filter((st) => st.done === false).length;
+
+          // Phần "ĐỀ BÀI" dạng chữ trong Docs → mục 03 (nếu đang trống) và Level
+          let promptFromDoc = false;
+          const promptWasEmpty = !promptTextInput.value.trim();
+          if (result.prompt.text && promptWasEmpty) {
+            promptTextInput.value = result.prompt.text;
+            showPromptTextEditor();
+            promptFromDoc = true;
+          }
+          if (result.prompt.level && LEVEL_INFO[result.prompt.level]) {
+            state.level = result.prompt.level;
+            renderLevel();
+          }
+          state.docRoster = result.order.length ? result.order : state.docRoster;
+
+          let promptAdded = 0;
+          // Docs đã có chữ đề thì không lấy ảnh đề nữa: AI đọc chữ chính xác hơn, và khỏi gửi ảnh kèm từng bài
+          // Ảnh đề trong Docs được lấy khi Docs chưa gõ chữ đề (chỉ "Số từ" thì vẫn lấy ảnh).
+          // Docs đã gõ chữ đề thì bỏ ảnh: AI đọc chữ chính xác hơn và khỏi gửi ảnh kèm từng bài.
+          const canAddDocImages = state.promptUploads.length === 0 && !result.prompt.hasTask &&
+            (promptWasEmpty || promptFromDoc || (restored && restored.hadDocImages));
+          if (result.imageBlobs.length && canAddDocImages) {
+            result.imageBlobs.forEach((blob, i) => {
+              const ext = (blob.type.split("/")[1] || "png").replace("jpeg", "jpg");
+              const file = new File([blob], `anh-de-tu-docs-${i + 1}.${ext}`, { type: blob.type });
+              addUploadedFileItem(promptFileList, state.promptUploads, file, "Đã thêm từ Docs · chờ đọc đề");
+              state.promptUploads[state.promptUploads.length - 1].fromDoc = true;
+            });
+            promptAdded = result.imageBlobs.length;
+          }
+
+          renderRoster();
+          saveClassSession();
+
+          const parts = [];
+          if (added) parts.push(`${added} bài mới`);
+          if (changed) parts.push(`${changed} bài đã sửa`);
+          if (same) parts.push(`${same} bài không đổi`);
+          if (writing) parts.push(`${writing} bạn đang viết (chưa tích chấm)`);
+          if (result.skipped.length) parts.push(`${result.skipped.length} bạn chưa nộp`);
+          const waiting = state.textStudents.filter(
+            (t) => !t.graded && t.pickInput.checked && t.textInput.value.trim()
+          ).length;
+          showFeedback(
+            (restored ? `Đã mở lại lớp đang chấm dở (${restored.graded} bài đã chấm). ` : "") +
+              `Docs: ${parts.join(" · ") || "không có bài"}.` +
+              (promptFromDoc && result.prompt.hasTask ? " Đã lấy đề dạng chữ." : "") +
+              (result.prompt.level ? ` Level ${result.prompt.level}.` : "") +
+              (promptAdded ? ` Đã thêm ${promptAdded} ảnh đề.` : "") +
+              (waiting ? ` Bấm "Chấm bài" để chấm ${waiting} bài cần chấm.` : " Không có bài mới cần chấm."),
+            false
+          );
+        } catch (err) {
+          showFeedback(err.message || "Không đọc được Docs. Thử lại sau.", true);
+        } finally {
+          docImportBtn.disabled = false;
+          docImportBtn.textContent = "Lấy bài";
+        }
+      }
+
+      /* -----------------------------
+       * Bảng tình trạng cả lớp (thứ tự theo Docs + các bài nhập tay)
+       * ----------------------------- */
+      const classRosterEl = document.getElementById("class-roster");
+      const classRosterCountEl = document.getElementById("class-roster-count");
+      const classRosterListEl = document.getElementById("class-roster-list");
+
+      function rosterStatusOf(entry) {
+        if (!entry) return { label: "Chưa nộp", cls: "is-no", key: "missing" };
+        const st = entry.studentId ? state.students.find((s) => s.id === entry.studentId) : null;
+        if (st && st.status === "pending" && st.tabNote === "đang chấm") return { label: "Đang chấm", cls: "is-partial", key: "grading" };
+        if (st && st.status === "graded" && entry.graded) return { label: "Đã chấm", cls: "is-yes", key: "done", student: st };
+        if (!entry.pickInput.checked) {
+          return entry.docDone === false
+            ? { label: "Đang viết", cls: "is-partial", key: "writing", student: st }
+            : { label: "Không chấm", cls: "is-partial", key: "skip", student: st };
+        }
+        if (st && st.status === "graded") return { label: "Đã sửa · chờ chấm", cls: "is-partial", key: "waiting", student: st };
+        if (st && st.tabNote === "lỗi") return { label: "Lỗi · chấm lại", cls: "is-no", key: "error", student: st };
+        return { label: "Chờ chấm", cls: "is-partial", key: "waiting" };
+      }
+
+      function renderRoster() {
+        if (!classRosterEl) return;
+        const rows = [];
+        const used = new Set();
+        state.docRoster.forEach((name) => {
+          const entry = state.textStudents.find((t) => !used.has(t) && nameKey(t.nameInput.value) === nameKey(name));
+          if (entry) used.add(entry);
+          rows.push({ name, entry });
+        });
+        state.textStudents.forEach((t) => {
+          if (!used.has(t) && t.textInput.value.trim()) rows.push({ name: t.nameInput.value.trim() || "Chưa có tên", entry: t });
+        });
+
+        classRosterListEl.textContent = "";
+        classRosterEl.classList.toggle("is-hidden", rows.length === 0);
+        if (!rows.length) return;
+
+        const counts = { done: 0, waiting: 0, grading: 0, missing: 0, error: 0, writing: 0, skip: 0 };
+        rows.forEach((row) => {
+          const status = rosterStatusOf(row.entry);
+          counts[status.key] += 1;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "roster-item";
+          const nameEl = document.createElement("span");
+          nameEl.className = "roster-name";
+          nameEl.textContent = row.name;
+          const pill = document.createElement("span");
+          pill.className = `status-pill ${status.cls}`;
+          pill.textContent = status.label;
+          btn.append(nameEl, pill);
+          btn.title = status.student ? "Mở bài đã chấm" : row.entry ? "Xem bài trong danh sách" : "Chưa có bài trong Docs";
+          btn.addEventListener("click", () => {
+            const idx = status.student ? state.students.indexOf(status.student) : -1;
+            if (idx !== -1) {
+              state.activeStudentIndex = idx;
+              state.activeGroup = null;
+              state.selectedErrorId = status.student.errors.length ? status.student.errors[0].id : null;
+              renderActiveStudent();
+              studentTabsEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } else if (row.entry) {
+              row.entry.cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              row.entry.textInput.focus({ preventScroll: true });
+            }
+          });
+          classRosterListEl.appendChild(btn);
+        });
+
+        const bits = [`Đã chấm ${counts.done}/${rows.length}`];
+        if (counts.grading) bits.push(`đang chấm ${counts.grading}`);
+        if (counts.waiting) bits.push(`chờ chấm ${counts.waiting}`);
+        if (counts.writing) bits.push(`đang viết ${counts.writing}`);
+        if (counts.skip) bits.push(`không chấm ${counts.skip}`);
+        if (counts.error) bits.push(`lỗi ${counts.error}`);
+        if (counts.missing) bits.push(`chưa nộp ${counts.missing}`);
+        classRosterCountEl.textContent = bits.join(" · ");
+      }
+
+      /* Mở trang: nếu lần trước đang chấm dở 1 lớp từ Docs thì điền sẵn link và nhắc */
+      (function hintLastClass() {
+        const lastUrl = storageGet(STORAGE_KEY_LAST_DOC);
+        const lastId = getDocId(lastUrl);
+        const saved = lastId ? readClassSession(lastId) : null;
+        if (!saved) return;
+        docUrlInput.value = lastUrl;
+        const n = (saved.students || []).length;
+        const time = new Date(saved.savedAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+        showFeedback(`Có lớp đang chấm dở (${n} bài đã chấm, lưu lúc ${time}). Bấm "Lấy bài" để mở lại và lấy thêm bài mới.`, false);
+      })();
+
+      docImportBtn.addEventListener("click", importFromGoogleDoc);
+      docUrlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          importFromGoogleDoc();
         }
       });
 
@@ -2430,14 +3263,79 @@
         }
       }
 
+      /* Chấm từng học sinh một request riêng (chạy song song GRADE_CONCURRENCY bài).
+       * Trước đây cả lớp gửi chung 1 request → JSON trả về rất dài, hay quá thời gian chờ
+       * hoặc bị cắt MAX_TOKENS, rồi lại thử lần lượt 5 model với cả lớp (có thể mất vài phút rồi vẫn lỗi). */
+      const GRADE_CONCURRENCY = 3;
+      let studentSeq = 0;
+
+      async function runWithConcurrency(items, limit, worker) {
+        let next = 0;
+        const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+          while (next < items.length) {
+            const idx = next++;
+            await worker(items[idx], idx);
+          }
+        });
+        await Promise.all(runners);
+      }
+
+      /* Gọi Gemini cho 1 phần việc, thử lần lượt các model dự phòng nếu model trước lỗi tạm thời. */
+      async function gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs, onModel) {
+        const attemptErrors = [];
+        for (const modelId of candidates) {
+          if (onModel) onModel(modelId);
+          try {
+            const parsed = await callGeminiWithModel(apiKey, modelId, parts, signal, timeoutMs);
+            if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
+              throw new Error("AI không trả về bài làm nào.");
+            }
+            return { parsed, modelId };
+          } catch (err) {
+            if (err.isUserCancel || err.status === 401 || err.status === 403 || candidates.length === 1) throw err;
+            attemptErrors.push(`${modelId}: ${err.message}`);
+          }
+        }
+        throw new Error(attemptErrors.join(" | "));
+      }
+
+      function makePlaceholder(id, name, title, desc, tabNote) {
+        return { id, name, status: "pending", emptyTitle: title, emptyDesc: desc, tabNote, tokens: [], errors: [] };
+      }
+
+      function replaceStudentById(id, student) {
+        const idx = state.students.findIndex((s) => s.id === id);
+        if (idx === -1) return -1;
+        state.students[idx] = student;
+        return idx;
+      }
+
+      /* Vẽ lại sau khi 1 bài xong: nếu đang xem đúng bài đó thì vẽ cả bài, không thì chỉ cập nhật tab. */
+      function refreshAfterStudentUpdate(changedIdx) {
+        renderModeHeader();
+        if (changedIdx === state.activeStudentIndex) {
+          const st = getActiveStudent();
+          state.activeGroup = null;
+          state.selectedErrorId = st && st.errors && st.errors.length ? st.errors[0].id : null;
+          renderActiveStudent();
+        } else {
+          renderStudentTabs();
+        }
+        renderRoster();
+        saveClassSession();
+      }
+
       async function handleGradeWithAI() {
         if (state.isGrading) return;
 
         const apiKey = apiKeyInput.value.trim();
         const pendingUploads = state.workUploads.filter((u) => !u.graded);
         const pendingTextEntries = state.textStudents.filter(
-          (t) => !t.graded && t.textInput.value.trim().length > 0
+          (t) => !t.graded && t.pickInput.checked && t.textInput.value.trim().length > 0
         );
+        const unpickedCount = state.textStudents.filter(
+          (t) => !t.graded && !t.pickInput.checked && t.textInput.value.trim().length > 0
+        ).length;
         const hasAnyRealInput =
           state.workUploads.length > 0 ||
           state.textStudents.some((t) => t.textInput.value.trim().length > 0);
@@ -2454,8 +3352,16 @@
 
         if (!hasAnyRealInput) {
           showFeedback(
-            "Hãy thêm ít nhất 1 ảnh bài làm hoặc bấm \"+ Thêm bài viết học sinh\" để nhập bài cần chấm.",
+            "Hãy dán link Google Docs, thêm ít nhất 1 ảnh bài làm hoặc bấm \"+ Thêm bài viết học sinh\" để nhập bài cần chấm.",
             true
+          );
+          return;
+        }
+
+        if (pendingUploads.length === 0 && pendingTextEntries.length === 0 && unpickedCount > 0) {
+          showFeedback(
+            `Chưa có bài nào được tích để chấm. ${unpickedCount} bài chưa tích (thường là bạn đang viết dở) — tích ô "Chấm" ở bài muốn chấm, hoặc đợi học sinh gõ Xong rồi bấm "Lấy bài".`,
+            false
           );
           return;
         }
@@ -2470,12 +3376,21 @@
 
         state.isGrading = true;
         state.abortController = new AbortController();
+        const signal = state.abortController.signal;
         gradeBtn.disabled = true;
         formResetBtn.textContent = "Hủy";
+
+        const totalJobs = pendingTextEntries.length + (pendingUploads.length > 0 ? 1 : 0);
+        let doneJobs = 0;
+        let failedJobs = 0;
+        let gradedCount = 0;
+        const usedModels = new Set();
         let elapsedSec = 0;
         let currentStageMsg = "Đang chuẩn bị ảnh và kết nối Gemini...";
         const updateTimerUI = () => {
-          gradeBtn.textContent = `Đang chấm... (${elapsedSec}s)`;
+          gradeBtn.textContent = totalJobs > 1
+            ? `Đang chấm ${doneJobs}/${totalJobs}... (${elapsedSec}s)`
+            : `Đang chấm... (${elapsedSec}s)`;
           showFeedback(`${currentStageMsg} (${elapsedSec}s)`, false);
         };
         updateTimerUI();
@@ -2484,131 +3399,159 @@
           updateTimerUI();
         }, 1000);
 
-        try {
-          const parts = [{ text: buildPromptInstructions(pendingTextEntries, pendingUploads.length) }];
+        // Bài văn bản: tạo sẵn tab "đang chấm" theo đúng thứ tự (chấm lại bài đã sửa thì thay đúng tab cũ)
+        const textJobs = pendingTextEntries.map((entry, i) => {
+          const name = entry.nameInput.value.trim() || `Học sinh ${state.students.length + i + 1}`;
+          const prevIdx = entry.studentId ? state.students.findIndex((s) => s.id === entry.studentId) : -1;
+          const existing = prevIdx !== -1 ? state.students[prevIdx] : null;
+          // Chỉ giữ lại kết quả cũ nếu đã chấm xong; tab báo lỗi cũ thì thay luôn
+          const prev = existing && existing.status === "graded" ? existing : null;
+          const id = existing ? existing.id : `ai-student-${++studentSeq}`;
+          const placeholder = makePlaceholder(
+            id, name,
+            `Đang chấm bài của ${name}...`,
+            "Bài này sẽ hiện ra ngay khi AI chấm xong. Bạn có thể bấm sang tab khác để xem bài đã chấm.",
+            "đang chấm"
+          );
+          if (existing) state.students[prevIdx] = placeholder;
+          else state.students.push(placeholder);
+          entry.studentId = id; // để bảng tình trạng hiện "Đang chấm"
+          entry.statusSpan.textContent = "Đang chấm...";
+          entry.statusSpan.classList.remove("is-done");
+          return { kind: "text", entry, id, name, prev };
+        });
+        const firstNewIdx = textJobs.length ? state.students.findIndex((s) => s.id === textJobs[0].id) : -1;
+        if (firstNewIdx !== -1) state.activeStudentIndex = firstNewIdx;
+        renderModeHeader();
+        renderActiveStudent();
+        renderRoster();
 
+        try {
+          // Ảnh đề chỉ chuẩn bị 1 lần, dùng chung cho mọi bài
+          const promptImageParts = [];
           if (state.promptUploads.length > 0) {
-            parts.push({
+            promptImageParts.push({
               text: `[TẬP HỢP ${state.promptUploads.length} ẢNH ĐỀ BÀI — HÃY LIÊN KẾT TẤT CẢ CÁC ẢNH NÀY THÀNH BỘ YÊU CẦU & TIÊU CHÍ THỐNG NHẤT]`
             });
-            const promptParts = await Promise.all(
+            const prepared = await Promise.all(
               state.promptUploads.map((entry, i) => {
                 setItemStatus(entry, `Đang gửi mảnh đề #${i + 1}...`, [], false);
                 return prepareImagePart(entry.file);
               })
             );
             state.promptUploads.forEach((entry, i) => {
-              parts.push({ text: `[PHẦN ĐỀ BÀI #${i + 1}: ${entry.name}]` });
-              parts.push(promptParts[i]);
+              promptImageParts.push({ text: `[PHẦN ĐỀ BÀI #${i + 1}: ${entry.name}]` });
+              promptImageParts.push(prepared[i]);
             });
           }
 
+          const jobs = [...textJobs];
           if (pendingUploads.length > 0) {
-            parts.push({ text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" });
             const workParts = await Promise.all(
               pendingUploads.map((entry) => {
                 setItemStatus(entry, "Đang nhận diện bài làm...", [], false);
                 return prepareImagePart(entry.file);
               })
             );
-            workParts.forEach((part) => parts.push(part));
+            jobs.push({ kind: "images", uploads: pendingUploads, workParts });
           }
 
-          pendingTextEntries.forEach((entry) => {
-            entry.statusSpan.textContent = "Đang chấm...";
-            entry.statusSpan.classList.remove("is-done");
-          });
+          const candidates = await resolveModelCandidates(apiKey, signal);
+          currentStageMsg = totalJobs > 1
+            ? `Đang chấm ${totalJobs} phần việc song song bằng ${candidates[0]}`
+            : `Đang phân tích và chấm bài bằng ${candidates[0]}`;
+          updateTimerUI();
 
-          const candidates = await resolveModelCandidates(apiKey, state.abortController.signal);
-          let parsed = null;
-          let usedModel = candidates[0];
-          let lastError = null;
-          const attemptErrors = [];
-          const perModelTimeout = candidates.length === 1 ? 90000 : 70000;
-
-          for (const modelId of candidates) {
-            usedModel = modelId;
-            currentStageMsg = `Đang phân tích và chấm bài bằng ${modelId}`;
-            updateTimerUI();
+          await runWithConcurrency(jobs, GRADE_CONCURRENCY, async (job) => {
             try {
-              parsed = await callGeminiWithModel(
-                apiKey,
-                modelId,
-                parts,
-                state.abortController.signal,
-                perModelTimeout
-              );
-              break;
+              if (job.kind === "text") {
+                const parts = [{ text: buildPromptInstructions([job.entry], 0) }, ...promptImageParts];
+                const timeoutMs = candidates.length === 1 ? 120000 : 90000;
+                const { parsed, modelId } = await gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs);
+                usedModels.add(modelId);
+                const result = normalizeStudentResult(parsed.students[0], studentSeq);
+                result.id = job.id;
+                result.name = job.entry.nameInput.value.trim() || result.name || job.name;
+                const idx = replaceStudentById(job.id, result);
+                job.entry.graded = true;
+                job.entry.studentId = job.id;
+                job.entry.statusSpan.textContent = "Đã chấm";
+                job.entry.statusSpan.classList.add("is-done");
+                gradedCount += 1;
+                refreshAfterStudentUpdate(idx);
+              } else {
+                const parts = [
+                  { text: buildPromptInstructions([], job.uploads.length) },
+                  ...promptImageParts,
+                  { text: "[ẢNH BÀI LÀM CỦA HỌC SINH]" },
+                  ...job.workParts
+                ];
+                const timeoutMs = Math.min(180000, 90000 + job.uploads.length * 20000);
+                const { parsed, modelId } = await gradeWithFallback(apiKey, candidates, parts, signal, timeoutMs);
+                usedModels.add(modelId);
+                const results = parsed.students.map((st) => normalizeStudentResult(st, ++studentSeq));
+                const startIdx = state.students.length;
+                state.students = state.students.concat(results);
+                job.uploads.forEach((entry) => {
+                  entry.graded = true;
+                  setItemStatus(entry, `Đã chấm ${results.length} bài:`, results.map((s) => s.name), true);
+                });
+                gradedCount += results.length;
+                // Chỉ có ảnh (không có bài văn bản đang chờ) → mở luôn tab bài đầu tiên vừa chấm
+                if (firstNewIdx === -1) state.activeStudentIndex = startIdx;
+                refreshAfterStudentUpdate(firstNewIdx === -1 ? startIdx : -1);
+              }
             } catch (err) {
-              lastError = err;
-              attemptErrors.push(`${modelId}: ${err.message}`);
-              if (err.isUserCancel || err.status === 401 || err.status === 403) {
-                throw err;
+              if (err.isUserCancel) throw err;
+              failedJobs += 1;
+              if (job.kind === "text") {
+                // Lỗi khi chấm lại bài đã có kết quả → giữ kết quả cũ; bài mới → tab báo lỗi
+                const failTab = job.prev || makePlaceholder(
+                  job.id, job.name,
+                  `Chưa chấm được bài của ${job.name}`,
+                  `${err.message} — Bấm "Chấm bài" để thử lại riêng bài này.`,
+                  "lỗi"
+                );
+                const idx = replaceStudentById(job.id, failTab);
+                job.entry.studentId = job.id;
+                job.entry.statusSpan.textContent = "Lỗi · chấm lại";
+                job.entry.statusSpan.classList.remove("is-done");
+                refreshAfterStudentUpdate(idx);
+              } else {
+                job.uploads.forEach((entry) => setItemStatus(entry, `Lỗi: ${err.message}`, [], false));
               }
-              if (candidates.length === 1) {
-                throw err;
-              }
+            } finally {
+              doneJobs += 1;
+              updateTimerUI();
             }
-          }
-
-          if (!parsed || !Array.isArray(parsed.students) || parsed.students.length === 0) {
-            if (attemptErrors.length > 1) {
-              throw new Error(attemptErrors.join(" | "));
-            }
-            throw lastError || new Error("AI không tách được bài làm học sinh nào.");
-          }
-
-          const baseIndex = state.students.length;
-          const newlyGraded = parsed.students.map((st, i) =>
-            normalizeStudentResult(st, baseIndex + i + 1)
-          );
-          const newNames = newlyGraded.map((s) => s.name);
-
-          state.promptUploads.forEach((entry) => {
-            entry.graded = true;
-            setItemStatus(entry, "Đã đọc đề bài", [], true);
           });
 
-          pendingUploads.forEach((entry) => {
-            entry.graded = true;
-            setItemStatus(entry, `Đã chấm ${newlyGraded.length} bài:`, newNames, true);
-          });
-
-          pendingTextEntries.forEach((entry) => {
-            entry.graded = true;
-            entry.statusSpan.textContent = "Đã chấm";
-            entry.statusSpan.classList.add("is-done");
-          });
-
-          if (state.students.length === 0) {
-            state.students = newlyGraded;
-            state.activeStudentIndex = 0;
+          state.promptUploads.forEach((entry) => setItemStatus(entry, "Đã đọc đề bài", [], true));
+          const modelText = usedModels.size ? ` bằng ${Array.from(usedModels).join(", ")}` : "";
+          if (failedJobs === 0) {
+            showFeedback(`Đã chấm ${gradedCount} bài${modelText} trong ${elapsedSec}s.`, false);
           } else {
-            state.activeStudentIndex = state.students.length;
-            state.students = state.students.concat(newlyGraded);
+            showFeedback(
+              `Đã chấm ${gradedCount} bài${modelText}; ${failedJobs} phần chưa chấm được (xem tab báo lỗi). Bấm "Chấm bài" để thử lại riêng các bài lỗi.`,
+              true
+            );
           }
-
-          const activeStu = getActiveStudent();
-          state.activeGroup = null;
-          state.selectedErrorId = activeStu && activeStu.errors.length ? activeStu.errors[0].id : null;
-
-          renderModeHeader();
-          renderActiveStudent();
-          showFeedback(
-            `Đã chấm ${newlyGraded.length} bài (${newNames.join(", ")}) bằng ${usedModel} trong ${elapsedSec}s.`,
-            false
-          );
         } catch (err) {
-          state.promptUploads.forEach((entry) => {
-            setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false);
+          // Hủy hoặc lỗi chung (key sai, mất mạng...): trả các tab đang chờ về trạng thái trước đó
+          textJobs.forEach((job) => {
+            const cur = state.students.find((s) => s.id === job.id);
+            if (!cur || cur.status === "graded") return;
+            if (job.prev) replaceStudentById(job.id, job.prev);
+            else state.students = state.students.filter((s) => s.id !== job.id);
+            job.entry.statusSpan.textContent = "Chờ chấm";
+            job.entry.statusSpan.classList.remove("is-done");
           });
+          state.activeStudentIndex = Math.min(state.activeStudentIndex, Math.max(0, state.students.length - 1));
+          state.promptUploads.forEach((entry) => setItemStatus(entry, "Đã thêm · chờ đọc đề", [], false));
           pendingUploads.forEach((entry) => {
-            setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
+            if (!entry.graded) setItemStatus(entry, "Đã thêm · chờ nhận diện tên học sinh", [], false);
           });
-          pendingTextEntries.forEach((entry) => {
-            entry.statusSpan.textContent = "Chờ chấm";
-            entry.statusSpan.classList.remove("is-done");
-          });
+          renderActiveStudent();
           showFeedback(
             err.isUserCancel ? "Đã hủy lượt chấm bài." : `Không thể chấm bài: ${err.message}`,
             !err.isUserCancel
@@ -2620,6 +3563,8 @@
           gradeBtn.disabled = false;
           formResetBtn.textContent = "Reset lớp";
           renderModeHeader();
+          renderRoster();
+          saveClassSession();
         }
       }
 
